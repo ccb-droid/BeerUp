@@ -1,15 +1,29 @@
+"use client"
+
 import { Suspense } from "react"
 import { ArrowLeft, Edit, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import Image from "next/image"
+import Link from "next/link"
+import { CreateReviewDialog } from "@/components/review/create-review-dialog"
 import { Badge } from "@/components/ui/badge"
 import OtherReviews from "@/components/other-reviews"
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 
+interface BeerData {
+  id: string
+  name: string
+  brewery: string
+  style: string
+  created_at: string
+  abv?: number
+  description?: string
+  image_url?: string
+}
+
 // Mock data for when the beer doesn't exist in the database
-const mockBeerData = {
+const mockBeerData: Record<string, BeerData> = {
   "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11": {
     id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
     name: "Hazy Wonder",
@@ -57,7 +71,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   const userId = session?.user?.id
 
   // For development, always use mock data
-  const beerData = mockBeerData[params.id]
+  const beerData: BeerData | undefined = mockBeerData[params.id] as BeerData | undefined
 
   // If the beer ID doesn't match any of our mock beers, show 404
   if (!beerData) {
@@ -65,9 +79,19 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   }
 
   // For development, we'll assume the user hasn't reviewed this beer yet
-  const hasUserReview = false
-  const userReview = null
-  const isOwner = false
+  const userReview = {
+    id: "mock-review-id",
+    user_id: userId || "",
+    beer_id: params.id,
+    rating: 4,
+    review_text: "This is a sample review.",
+    images: ["/placeholder.svg?height=300&width=400"],
+    created_at: new Date().toISOString(),
+    typically_drinks: false
+  }
+  
+  const hasUserReview = Boolean(userReview)
+  const isOwner = userReview?.user_id === userId
 
   return (
     <div className="container max-w-4xl py-6 space-y-6">
@@ -92,7 +116,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
               />
             </div>
 
-            {userReview.images && userReview.images.length > 0 && (
+            {userReview.images.length > 0 && (
               <div className="flex space-x-2">
                 {userReview.images.map((image, index) => (
                   <div
@@ -100,7 +124,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
                     className="relative h-20 w-20 rounded-md overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary"
                   >
                     <Image
-                      src={image || "/placeholder.svg"}
+                      src={image}
                       alt={`${beerData.name} ${index + 1}`}
                       fill
                       className="object-cover"
@@ -153,10 +177,10 @@ export default async function ReviewPage({ params }: { params: { id: string } })
         </div>
       ) : (
         <div className="text-center py-10">
-          <p className="text-muted-foreground mb-4">You haven't reviewed this beer yet.</p>
-          <Button asChild>
-            <Link href={`/reviews/new?beer=${params.id}`}>Add Your Review</Link>
-          </Button>
+          <p className="text-muted-foreground mb-4">You haven’t reviewed this beer yet.</p>
+          <CreateReviewDialog>
+            <Button>Add Your Review</Button>
+          </CreateReviewDialog>
         </div>
       )}
 
