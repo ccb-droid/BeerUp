@@ -1,25 +1,33 @@
+"use client"
+
 import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { createClient } from "@/lib/supabase/server"
+import { supabase } from "@/lib/supabase/client"
 import RecentReviews from "@/components/recent-reviews"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BeerList from "@/components/beer-list"
 import SearchBar from "@/components/search-bar"
+<<<<<<< HEAD
 import { checkAuth } from "@/lib/auth.server";
 
 export default async function HomePage() {
   const isAuthenticated = await checkAuth();
   console.log("isAuthenticated", isAuthenticated)
 
+=======
+import { CreateReviewDialog } from "@/components/review/create-review-dialog"
+
+export default function HomePage() {
+  // Client-side auth check is handled by the CreateReviewDialog component
+>>>>>>> f033bb8c4438c3b28fb5caa425bb3cae3740d373
 
   return (
     <div className="container max-w-4xl py-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">BeerUp</h1>
-        <Button asChild>
-          <Link href={isAuthenticated ? "/reviews/new" : "/auth/login?redirectTo=/reviews/new"}>Add Review</Link>
-        </Button>
+        <CreateReviewDialog>
+          <Button>Add Review</Button>
+        </CreateReviewDialog>
       </div>
 
       {/* Updated search bar with functionality */}
