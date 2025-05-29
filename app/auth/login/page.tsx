@@ -12,6 +12,7 @@ import { Beer, AlertCircle } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/components/toast-provider"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { validateLoginForm, handleLoginSubmit } from "@/lib/auth"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -26,57 +27,19 @@ export default function LoginPage() {
   const { signIn } = useAuth()
   const { showToast } = useToast()
 
-  // Validation function
-  const validateForm = () => {
-    const errors: string[] = []
-
-    if (!email.trim()) {
-      errors.push("Email is required")
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      errors.push("Email format is invalid")
-    }
-
-    if (!password) {
-      errors.push("Password is required")
-    }
-
-    setValidationErrors(errors)
-    return errors.length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setValidationErrors([])
-
-    if (!validateForm()) {
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const { error } = await signIn(email, password)
-
-      if (error) {
-        setError(error.message || "Invalid email or password")
-        throw error
-      }
-
-      // Show success message
-      showToast("Logged in successfully", "success")
-
-      // Small delay to let the auth state update, then redirect
-      setTimeout(() => {
-        router.push(redirectTo)
-        router.refresh()
-      }, 10)
-    } catch (error: any) {
-      console.error("Login error:", error)
-      setError(error.message || "Invalid email or password")
-    } finally {
-      setIsLoading(false)
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    handleLoginSubmit(
+      e,
+      email,
+      password,
+      signIn,
+      showToast,
+      router,
+      redirectTo,
+      setError,
+      setValidationErrors,
+      setIsLoading
+    )
   }
 
   return (

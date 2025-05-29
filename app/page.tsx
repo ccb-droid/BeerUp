@@ -6,15 +6,12 @@ import RecentReviews from "@/components/recent-reviews"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BeerList from "@/components/beer-list"
 import SearchBar from "@/components/search-bar"
+import { checkAuth } from "@/lib/auth.server";
 
 export default async function HomePage() {
-  const supabase = createClient()
+  const isAuthenticated = await checkAuth();
+  console.log("isAuthenticated", isAuthenticated)
 
-  // Check if user is authenticated
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  const isAuthenticated = !!session
 
   return (
     <div className="container max-w-4xl py-6 space-y-6">

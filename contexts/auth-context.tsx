@@ -14,7 +14,6 @@ type AuthContextType = {
   signUp: (email: string, password: string, username: string, dob: string) => Promise<{ error: any; user: any }>
   signOut: () => Promise<{ success: boolean; error?: any }>
   resetPassword: (email: string) => Promise<{ error: any }>
-  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,44 +23,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Function to refresh the session
-  const refreshSession = async () => {
-    try {
-      const { data } = await supabase.auth.getSession()
-      setSession(data.session)
-      setUser(data.session?.user ?? null)
-    } catch (error) {
-      console.error("Error refreshing session:", error)
-    }
-  }
-
   useEffect(() => {
-    // Get initial session
-    refreshSession().then(() => setIsLoading(false))
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session?.user?.email)
-      setSession(session)
-      setUser(session?.user ?? null)
+    // Initial session load
+    // For @supabase/ssr, getSession() on the client can synchronously return the cached session
+    // or trigger a fetch if needed. The onAuthStateChange listener will handle updates.
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession)
+      setUser(initialSession?.user ?? null)
+      setIsLoading(false)
+    }).catch(error => {
+      console.error("Error getting initial session:", error)
       setIsLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      console.log("Auth state changed (onAuthStateChange):", _event, currentSession?.user?.email)
+      setSession(currentSession)
+      setUser(currentSession?.user ?? null)
+      // setIsLoading might be needed here if an event signifies a loading state, 
+      // but typically it's false after initial load or auth event.
+      // If an auth event happens (like sign out), user/session become null, which is fine.
+      // If a sign in happens, user/session get populated.
+      // If a token refresh happens silently, this might also fire with TOKEN_REFRESHED event.
+      setIsLoading(false) // Ensure loading is false after any auth event resolution
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-
-      if (!error && data.session) {
-        // Manually update the session and user
-        setSession(data.session)
-        setUser(data.user)
-      }
-
+      // onAuthStateChange will handle setting user and session if successful
+      // No need to manually setSession/setUser here if onAuthStateChange is robust
       return { error }
     } catch (error) {
       console.error("Error in signIn:", error)
@@ -71,20 +68,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, username: string, dob: string) => {
     try {
-      // First, check if the user already exists
       const { data: existingUsers, error: checkError } = await supabase
-        .from("profiles")
+        .from("Profiles")
         .select("id")
         .eq("username", username)
         .limit(1)
 
       if (checkError) {
         console.error("Error checking existing user:", checkError)
+        // Decide if this is fatal or if sign-up should proceed with caution
       } else if (existingUsers && existingUsers.length > 0) {
         return { error: new Error("Username already exists"), user: null }
       }
 
-      // For development, we'll use sign up which bypasses email confirmation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -93,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             username,
             date_of_birth: dob,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
         },
       })
 
@@ -103,11 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (!data.user) {
-        return { error: new Error("Failed to create user"), user: null }
+        // This case might indicate email confirmation is pending or another issue
+        // onAuthStateChange should eventually reflect the user state
+        return { error: new Error("User object not returned from signUp. Email confirmation may be pending."), user: null }
       }
 
-      // Create a profile for the user
-      const { error: profileError } = await supabase.from("profiles").insert({
+      // Profile creation should ideally happen after email confirmation or be robust to it.
+      // For now, creating it immediately after signUp call if data.user exists.
+      const { error: profileError } = await supabase.from("Profiles").insert({
         id: data.user.id,
         username,
         date_of_birth: dob,
@@ -118,32 +117,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (profileError) {
         console.error("Profile creation error:", profileError)
-        return { error: profileError, user: null }
+        // If profile creation fails, the user exists in auth.users but not profiles.
+        // This is a state that needs careful handling (e.g., retry, cleanup, or allow user to proceed without profile).
+        return { error: profileError, user: data.user } // Return user but with profile error
       }
-
-      // For development, we'll auto-sign in the user
-      if (!data.session) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (signInError) {
-          console.error("Auto sign-in error:", signInError)
-          return { error: signInError, user: data.user }
-        }
-
-        // Manually update the session and user
-        if (signInData.session) {
-          setSession(signInData.session)
-          setUser(signInData.user)
-        }
-      } else {
-        // If we already have a session from signUp, use it
-        setSession(data.session)
-        setUser(data.user)
-      }
-
+      
+      // onAuthStateChange will handle setting user and session
       return { error: null, user: data.user }
     } catch (error) {
       console.error("Unexpected error in signUp:", error)
@@ -153,12 +132,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut()
-      // Manually clear the session and user
-      setSession(null)
-      setUser(null)
-
-      // Return success
+      const { error } = await supabase.auth.signOut()
+      // onAuthStateChange will handle setting user and session to null
+      if (error) {
+        console.error("Error in signOut:", error)
+        return { success: false, error }
+      }
       return { success: true }
     } catch (error) {
       console.error("Error in signOut:", error)
@@ -169,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetPassword = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/reset-password`,
       })
       return { error }
     } catch (error) {
@@ -188,7 +167,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signUp,
         signOut,
         resetPassword,
-        refreshSession,
       }}
     >
       {children}

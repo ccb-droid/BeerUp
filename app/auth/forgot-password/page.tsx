@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import Link from "next/link"
 import { ArrowLeft, Beer } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+import { handleForgotPasswordSubmit } from "@/lib/auth"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -16,24 +17,8 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { resetPassword } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      // We'll call the reset password function but ignore any errors
-      // This is a security best practice - don't reveal if an email exists
-      await resetPassword(email)
-
-      // Always show success message regardless of whether the email exists
-      setSubmitted(true)
-    } catch (error) {
-      // Silently handle errors - still show success message
-      console.error("Error in reset password flow:", error)
-      setSubmitted(true)
-    } finally {
-      setIsLoading(false)
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    handleForgotPasswordSubmit(e, email, resetPassword, setSubmitted, setIsLoading)
   }
 
   if (submitted) {
