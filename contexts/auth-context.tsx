@@ -4,7 +4,7 @@ import type React from "react"
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
-import type { User, Session } from "@supabase/supabase-js"
+import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js"
 
 type AuthContextType = {
   user: User | null
@@ -27,17 +27,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Initial session load
     // For @supabase/ssr, getSession() on the client can synchronously return the cached session
     // or trigger a fetch if needed. The onAuthStateChange listener will handle updates.
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+    supabase.auth.getSession().then(({ data: { session: initialSession } }: { data: { session: Session | null } }) => {
       setSession(initialSession)
       setUser(initialSession?.user ?? null)
       setIsLoading(false)
-    }).catch(error => {
+    }).catch((error: any) => {
       console.error("Error getting initial session:", error)
       setIsLoading(false)
     })
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, currentSession: Session | null) => {
       console.log("Auth state changed (onAuthStateChange):", _event, currentSession?.user?.email)
       setSession(currentSession)
       setUser(currentSession?.user ?? null)

@@ -8,7 +8,7 @@ import Link from "next/link"
 import { CreateReviewDialog } from "@/components/review/create-review-dialog"
 import { Badge } from "@/components/ui/badge"
 import OtherReviews from "@/components/other-reviews"
-import { createClient } from "@/lib/supabase/server"
+import { supabase } from "@/lib/supabase/client"
 import { notFound } from "next/navigation"
 
 interface BeerData {
@@ -62,7 +62,6 @@ const mockBeerData: Record<string, BeerData> = {
 }
 
 export default async function ReviewPage({ params }: { params: { id: string } }) {
-  const supabase = createClient()
 
   // Check if user is authenticated
   const {
@@ -177,7 +176,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
         </div>
       ) : (
         <div className="text-center py-10">
-          <p className="text-muted-foreground mb-4">You haven’t reviewed this beer yet.</p>
+          <p className="text-muted-foreground mb-4">You haven't reviewed this beer yet.</p>
           <CreateReviewDialog>
             <Button>Add Your Review</Button>
           </CreateReviewDialog>

@@ -1,6 +1,8 @@
 import { supabase } from "./supabase/client"
 import { v4 as uuidv4 } from "uuid"
 
+// const supabase = createClient() // Remove this line if present
+
 export async function uploadImage(file: File, bucket = "beer-images") {
   try {
     const fileExt = file.name.split(".").pop()
