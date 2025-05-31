@@ -35,7 +35,6 @@ export default function NewReviewPage() {
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
   const { showToast } = useToast()
-
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
@@ -145,12 +144,18 @@ export default function NewReviewPage() {
           style: beerStyle,
         })
 
-        if (!newBeer) {
-          throw new Error("Failed to create beer")
+        if (!newBeer || !newBeer.id) {
+          throw new Error("Failed to create or retrieve beer ID")
         }
-
         beerId = newBeer.id
       }
+
+      // Add a check for beerId before creating review
+      if (!beerId) {
+        throw new Error("Beer ID is missing, cannot create review.")
+      }
+
+      console.log("Attempting to create review with beerId:", beerId);
 
       // 3. Create review
       const newReview = await createReview({

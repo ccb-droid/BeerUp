@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, username: string, dob: string) => {
     try {
       const { data: existingUsers, error: checkError } = await supabase
-        .from("Profiles")
+        .from("profiles")
         .select("id")
         .eq("username", username)
         .limit(1)
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Profile creation should ideally happen after email confirmation or be robust to it.
       // For now, creating it immediately after signUp call if data.user exists.
-      const { error: profileError } = await supabase.from("Profiles").insert({
+      const { error: profileError } = await supabase.from("profiles").insert({
         id: data.user.id,
         username,
         date_of_birth: dob,

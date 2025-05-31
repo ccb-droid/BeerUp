@@ -48,6 +48,7 @@ export async function createBeer(beer: NewBeer) {
     console.error("Error creating beer:", error)
     return null
   }
-
+  console.log("INSIDE CREATE BEER FUNCTION JUST BEFORE RETURN"); 
+  console.log("Data returned from createBeer:", data);
   return data as Beer
 }
