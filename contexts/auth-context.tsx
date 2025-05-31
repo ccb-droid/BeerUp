@@ -5,6 +5,16 @@ import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js"
+import {
+  checkUsernameExists,
+  createUserProfile,
+} from "@/app/db/profile"
+import {
+  signInUser,
+  signUpUser,
+  signOutUser,
+  resetUserPassword,
+} from "@/app/db/auth"
 
 type AuthContextType = {
   user: User | null
@@ -56,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { error } = await signInUser(email, password)
       // onAuthStateChange will handle setting user and session if successful
       // No need to manually setSession/setUser here if onAuthStateChange is robust
       return { error }
@@ -68,34 +78,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, username: string, dob: string) => {
     try {
-      const { data: existingUsers, error: checkError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("username", username)
-        .limit(1)
+      // Check if username exists using the new db function
+      const { exists: usernameExists, error: checkError } =
+        await checkUsernameExists(username)
 
       if (checkError) {
         console.error("Error checking existing user:", checkError)
         // Decide if this is fatal or if sign-up should proceed with caution
-      } else if (existingUsers && existingUsers.length > 0) {
+      } else if (usernameExists) {
         return { error: new Error("Username already exists"), user: null }
       }
 
-      const { data, error } = await supabase.auth.signUp({
+      // Sign up the user using the new db function
+      const { data, error: signUpError } = await signUpUser(
         email,
         password,
-        options: {
-          data: {
-            username,
-            date_of_birth: dob,
-          },
-          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
-        },
-      })
+        username,
+        dob
+      )
 
-      if (error) {
-        console.error("Sign up error:", error)
-        return { error, user: null }
+      if (signUpError) {
+        console.error("Sign up error:", signUpError)
+        return { error: signUpError, user: null }
       }
 
       if (!data.user) {
@@ -104,16 +108,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: new Error("User object not returned from signUp. Email confirmation may be pending."), user: null }
       }
 
-      // Profile creation should ideally happen after email confirmation or be robust to it.
-      // For now, creating it immediately after signUp call if data.user exists.
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: data.user.id,
+      // Create user profile using the new db function
+      const { error: profileError } = await createUserProfile(
+        data.user,
         username,
-        date_of_birth: dob,
-        notifications_enabled: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+        dob
+      )
 
       if (profileError) {
         console.error("Profile creation error:", profileError)
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // This is a state that needs careful handling (e.g., retry, cleanup, or allow user to proceed without profile).
         return { error: profileError, user: data.user } // Return user but with profile error
       }
-      
+
       // onAuthStateChange will handle setting user and session
       return { error: null, user: data.user }
     } catch (error) {
@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
+      const { error } = await signOutUser()
       // onAuthStateChange will handle setting user and session to null
       if (error) {
         console.error("Error in signOut:", error)
@@ -147,9 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/reset-password`,
-      })
+      const { error } = await resetUserPassword(email)
       return { error }
     } catch (error) {
       console.error("Error in resetPassword:", error)

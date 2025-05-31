@@ -4,9 +4,28 @@ import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { getOtherReviews } from "@/app/db/reviews"
+
+// Define a type for the review data
+interface ReviewProfile {
+  username: string;
+}
+
+interface ReviewData {
+  id: string;
+  user_id: string;
+  beer_id: string;
+  rating: number;
+  review_text: string;
+  typically_drinks: boolean;
+  images: string[];
+  created_at: string;
+  updated_at: string;
+  profiles: ReviewProfile | null; // Profile can be null
+}
 
 // Sample mock data with UUID-style IDs
-const mockOtherReviews = [
+const mockOtherReviews: ReviewData[] = [
   {
     id: "d290f1ee-6c54-4b01-90e6-d701748f0861",
     user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f35",
@@ -52,7 +71,7 @@ const mockOtherReviews = [
 ]
 
 export default function OtherReviews({ beerId, userId }: { beerId: string; userId?: string }) {
-  const [reviews, setReviews] = useState([])
+  const [reviews, setReviews] = useState<ReviewData[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
@@ -67,48 +86,39 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
 
     try {
       // Always use mock data for now to avoid runtime errors
-      setReviews(mockOtherReviews)
-      setHasMore(false)
-      setLoading(false)
-      return
+      // setReviews(mockOtherReviews);
+      // setHasMore(false);
+      // setLoading(false);
+      // return;
 
       // The code below is commented out to prevent runtime errors
       // Uncomment when your Supabase database is properly set up
-      /*
-      const { data, error } = await supabase
-        .from('reviews')
-        .select(`
-          *,
-          profiles:user_id (username)
-        `)
-        .eq('beer_id', beerId)
-        .neq('user_id', userId || '')
-        .order('created_at', { ascending: false })
-        .range(page * pageSize, (page + 1) * pageSize - 1)
+      
+      const { data, error } = await getOtherReviews(beerId, userId, page, pageSize);
       
       if (error) {
-        console.error('Error fetching reviews:', error)
+        console.error('Error fetching reviews:', error);
         // Use mock data if there's an error
         if (page === 0) {
-          setReviews(mockOtherReviews)
+          setReviews(mockOtherReviews);
         }
-        setHasMore(false)
+        setHasMore(false);
       } else if (data.length === 0 && page === 0) {
         // Use mock data if no reviews are found
-        setReviews(mockOtherReviews)
-        setHasMore(false)
+        setReviews(mockOtherReviews);
+        setHasMore(false);
       } else {
         if (data.length < pageSize) {
-          setHasMore(false)
+          setHasMore(false);
         }
         
         if (page === 0) {
-          setReviews(data)
+          setReviews(data);
         } else {
-          setReviews(prev => [...prev, ...data])
+          setReviews(prev => [...prev, ...data]);
         }
       }
-      */
+      
     } catch (e) {
       console.error("Error in fetchReviews:", e)
       // Fallback to mock data

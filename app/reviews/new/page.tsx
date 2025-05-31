@@ -15,9 +15,8 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/components/toast-provider"
 import { uploadMultipleImages } from "@/lib/storage"
-import { createBeer } from "@/lib/beers"
-import { createReview } from "@/lib/reviews"
-import { supabase } from "@/lib/supabase/client"
+import { createBeer, findExistingBeer } from "@/app/db/beers"
+import { createReview } from "@/app/db/reviews"
 
 export default function NewReviewPage() {
   const [images, setImages] = useState<File[]>([])
@@ -125,18 +124,11 @@ export default function NewReviewPage() {
       const uploadedImageUrls = await uploadMultipleImages(images)
 
       // 2. Create or find beer
-      const { data: existingBeers } = await supabase
-        .from("beers")
-        .select("id")
-        .eq("name", beerName)
-        .eq("brewery", brewery)
-        .eq("style", beerStyle)
-        .limit(1)
-
       let beerId
+      const existingBeer = await findExistingBeer(beerName, brewery, beerStyle)
 
-      if (existingBeers && existingBeers.length > 0) {
-        beerId = existingBeers[0].id
+      if (existingBeer && existingBeer.id) {
+        beerId = existingBeer.id
       } else {
         const newBeer = await createBeer({
           name: beerName,
@@ -174,8 +166,8 @@ export default function NewReviewPage() {
       showToast("Review added successfully!", "success")
 
       // 4. Redirect to review page
-      router.push(`/reviews/${beerId}`)
-      router.refresh()
+      console.log("Redirecting to review page with ID:", newReview.id)
+      router.push(`/reviews/${newReview.id}`)
     } catch (error: any) {
       setError(error.message || "An error occurred while creating your review")
       showToast("Failed to add review", "error")

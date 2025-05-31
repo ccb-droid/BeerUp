@@ -1,15 +1,17 @@
-"use client"
+// "use client"
 
-import { Suspense } from "react"
-import { ArrowLeft, Edit, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
-import Link from "next/link"
-import { CreateReviewDialog } from "@/components/review/create-review-dialog"
-import { Badge } from "@/components/ui/badge"
-import OtherReviews from "@/components/other-reviews"
-import { supabase } from "@/lib/supabase/client"
+// import { Suspense } from "react"
+// import { ArrowLeft, Edit, Trash2 } from "lucide-react"
+// import { Button } from "@/components/ui/button"
+// import Image from "next/image"
+// import Link from "next/link"
+// import { CreateReviewDialog } from "@/components/review/create-review-dialog"
+// import { Badge } from "@/components/ui/badge"
+// import OtherReviews from "@/components/other-reviews"
+import { getCurrentSession } from "@/app/db/auth"
 import { notFound } from "next/navigation"
+import ReviewDisplayClient from "./ReviewDisplayClient"
+import { getReviewById } from "@/app/db/reviews"
 
 interface BeerData {
   id: string
@@ -20,6 +22,19 @@ interface BeerData {
   abv?: number
   description?: string
   image_url?: string
+}
+
+interface UserReviewData {
+  id: string
+  user_id: string
+  beer_id: string;
+  rating: number
+  review_text: string
+  images: string[]
+  created_at: string
+  typically_drinks: boolean
+  profiles?: { username: string } | null; 
+  beers?: BeerData | null; 
 }
 
 // Mock data for when the beer doesn't exist in the database
@@ -61,134 +76,73 @@ const mockBeerData: Record<string, BeerData> = {
   },
 }
 
+// Page components in the app directory receive params as a prop
 export default async function ReviewPage({ params }: { params: { id: string } }) {
-
   // Check if user is authenticated
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const { data: { session } } = await getCurrentSession()
   const userId = session?.user?.id
+  const paramsId = await params.id
 
-  // For development, always use mock data
-  const beerData: BeerData | undefined = mockBeerData[params.id] as BeerData | undefined
+  // Fetch the review by ID
+  const review = await getReviewById(params.id)
 
-  // If the beer ID doesn't match any of our mock beers, show 404
-  if (!beerData) {
+  // If the review doesn't exist, show 404
+  if (!review) {
     notFound()
   }
 
-  // For development, we'll assume the user hasn't reviewed this beer yet
-  const userReview = {
-    id: "mock-review-id",
-    user_id: userId || "",
-    beer_id: params.id,
-    rating: 4,
-    review_text: "This is a sample review.",
-    images: ["/placeholder.svg?height=300&width=400"],
-    created_at: new Date().toISOString(),
-    typically_drinks: false
+  // Extract beer data from the review, or use mock data if not available
+  // This assumes `beers` relation is populated by `getReviewById`
+  // and matches the `BeerData` interface.
+  // You might need to adjust this based on the actual structure of `review.beers`
+  const beerData: BeerData = review.beers as BeerData || mockBeerData[review.beer_id] as BeerData | undefined;
+
+  // If beerData is still not found (e.g. review.beers is null and review.beer_id is not in mock data)
+  if (!beerData) {
+    console.error(`Beer data not found for review ID: ${params.id} and beer_id: ${review.beer_id}`);
+    notFound();
   }
   
-  const hasUserReview = Boolean(userReview)
+  // Ensure images is an array. If it's a string, try to parse it.
+  let processedImages: string[] = [];
+  if (Array.isArray(review.images)) {
+    processedImages = review.images;
+  } else if (typeof review.images === 'string') {
+    try {
+      const parsedImages = JSON.parse(review.images);
+      if (Array.isArray(parsedImages)) {
+        processedImages = parsedImages;
+      } else {
+        console.warn("Parsed review.images is not an array:", parsedImages);
+      }
+    } catch (e) {
+      console.error("Failed to parse review.images:", e);
+      // If parsing fails and it's a non-empty string, perhaps it's a single image URL
+      // Or handle as an error / empty array
+      // For now, we'll leave it as an empty array if parsing fails
+    }
+  } else if (review.images) {
+    // If review.images is truthy but not an array or string, log a warning.
+     console.warn("review.images is neither an array nor a string:", review.images);
+  }
+
+  // The fetched review is the userReview
+  const userReview: UserReviewData = {
+    ...review,
+    images: processedImages, // Use the processed images
+  } as UserReviewData;
+  
+  const hasUserReview = Boolean(userReview) 
   const isOwner = userReview?.user_id === userId
 
   return (
-    <div className="container max-w-4xl py-6 space-y-6">
-      <div className="flex items-center space-x-2">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <h1 className="text-2xl font-bold">{beerData.name}</h1>
-      </div>
-
-      {hasUserReview ? (
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="aspect-video relative rounded-lg overflow-hidden">
-              <Image
-                src={userReview.images?.[0] || "/placeholder.svg?height=300&width=400"}
-                alt={beerData.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-
-            {userReview.images.length > 0 && (
-              <div className="flex space-x-2">
-                {userReview.images.map((image, index) => (
-                  <div
-                    key={index}
-                    className="relative h-20 w-20 rounded-md overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary"
-                  >
-                    <Image
-                      src={image}
-                      alt={`${beerData.name} ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <h2 className="font-semibold text-lg">{beerData.brewery}</h2>
-              <p className="text-muted-foreground">{beerData.style}</p>
-              <div className="flex items-center mt-2">
-                <div className="bg-amber-100 text-amber-800 font-medium rounded-full px-3 py-1">
-                  Rating: {userReview.rating}/5
-                </div>
-                {userReview.typically_drinks && (
-                  <Badge variant="outline" className="ml-2">
-                    I typically drink this style
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-medium">My Review</h3>
-              <p className="mt-1">{userReview.review_text}</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Reviewed on {new Date(userReview.created_at).toLocaleDateString()}
-              </p>
-            </div>
-
-            {isOwner && (
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="flex items-center" asChild>
-                  <Link href={`/reviews/edit/${userReview.id}`}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Link>
-                </Button>
-                <Button variant="outline" size="sm" className="flex items-center text-destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="text-center py-10">
-          <p className="text-muted-foreground mb-4">You haven't reviewed this beer yet.</p>
-          <CreateReviewDialog>
-            <Button>Add Your Review</Button>
-          </CreateReviewDialog>
-        </div>
-      )}
-
-      <div className="border-t pt-6">
-        <h2 className="font-semibold text-lg mb-4">Other Reviews</h2>
-        <Suspense fallback={<div>Loading other reviews...</div>}>
-          <OtherReviews beerId={params.id} userId={userId} />
-        </Suspense>
-      </div>
-    </div>
+    <ReviewDisplayClient 
+      beerData={beerData} 
+      userReview={userReview} 
+      hasUserReview={hasUserReview} 
+      isOwner={isOwner} 
+      userId={userId} 
+      paramsId={paramsId} 
+    />
   )
 }

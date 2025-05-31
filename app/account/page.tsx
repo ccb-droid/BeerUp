@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
-import { getProfile, updateProfile } from "@/lib/profiles"
+import { getProfile, updateProfile } from "@/app/db/profile"
 
 export default function AccountPage() {
   const [username, setUsername] = useState("")
