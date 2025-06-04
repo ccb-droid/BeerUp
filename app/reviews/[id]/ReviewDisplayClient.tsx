@@ -5,7 +5,7 @@ import { ArrowLeft, Edit, Trash2, Star, Calendar, Beer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
-import { CreateReviewDialog } from "@/components/review/create-review-dialog"
+import { AddBeerDialog } from "@/components/add-beer/add-beer-dialog"
 import { Badge } from "@/components/ui/badge"
 import OtherReviews from "@/components/other-reviews"
 import { Card, CardContent } from "@/components/ui/card"
@@ -213,14 +213,14 @@ export default function ReviewDisplayClient({
                     You haven't reviewed this beer yet. Be the first to share your thoughts!
                   </p>
                 </div>
-                <CreateReviewDialog>
+                <AddBeerDialog>
                   <Button 
                     size="lg" 
                     className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     Add Your Review
                   </Button>
-                </CreateReviewDialog>
+                </AddBeerDialog>
               </div>
             </CardContent>
           </Card>

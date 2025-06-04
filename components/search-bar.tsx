@@ -8,8 +8,19 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 
+// Beer review type
+type BeerReview = {
+  id: string
+  name: string
+  brewery: string
+  style: string
+  rating: number
+  reviewer: string
+  reviewText: string
+}
+
 // Mock data that represents all available beer reviews
-const allBeerReviews = [
+const allBeerReviews: BeerReview[] = [
   {
     id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
     name: "Hazy Wonder",
@@ -59,7 +70,7 @@ const allBeerReviews = [
 
 export default function SearchBar() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<BeerReview[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -164,13 +175,13 @@ export default function SearchBar() {
   }
 
   return (
-    <div className="relative" ref={searchRef}>
+    <div className="relative w-full" ref={searchRef}>
       <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           ref={inputRef}
-          placeholder="Search beers by name, brewery, style, or reviewer..."
-          className="pl-10"
+          placeholder="Search beers, breweries, styles..."
+          className="pl-10 h-11 text-base sm:text-sm bg-background"
           value={searchQuery}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
@@ -183,28 +194,31 @@ export default function SearchBar() {
       {/* Search Results Dropdown */}
       {searchQuery && showResults && (
         <div
-          className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border rounded-md shadow-lg max-h-96 overflow-y-auto"
+          className="absolute top-full left-0 right-0 z-50 mt-2 bg-background border rounded-lg shadow-lg max-h-80 sm:max-h-96 overflow-y-auto scrollbar-thin"
           role="listbox"
         >
           {isSearching ? (
-            <div className="p-4 text-center text-muted-foreground">Searching...</div>
+            <div className="p-4 text-center text-muted-foreground">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+              Searching...
+            </div>
           ) : searchResults.length > 0 ? (
             <div className="p-2">
-              <div className="text-sm text-muted-foreground mb-2 px-2">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-2 px-2">
                 Found {searchResults.length} result{searchResults.length !== 1 ? "s" : ""}
-                <span className="text-xs ml-2">(Use ↑↓ to navigate, Enter to select)</span>
+                <span className="hidden sm:inline text-xs ml-2">(Use ↑↓ to navigate, Enter to select)</span>
               </div>
               {searchResults.map((beer, index) => (
                 <div
                   key={beer.id}
-                  className={`mb-2 cursor-pointer ${selectedIndex === index ? "ring-2 ring-primary" : ""}`}
+                  className={`mb-2 cursor-pointer rounded-lg ${selectedIndex === index ? "ring-2 ring-primary ring-offset-1" : ""}`}
                   onClick={() => handleResultClick(beer.id)}
                   role="option"
                   aria-selected={selectedIndex === index}
                 >
-                  <Card className="hover:bg-accent transition-colors">
+                  <Card className="hover:bg-accent/50 transition-colors border-0 shadow-none">
                     <CardContent className="p-3 flex items-center space-x-3">
-                      <div className="relative h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
+                      <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                         <Image
                           src="/placeholder.svg?height=48&width=48"
                           alt={beer.name}
@@ -213,13 +227,15 @@ export default function SearchBar() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate">{beer.name}</h4>
-                        <p className="text-sm text-muted-foreground truncate">
+                        <h4 className="font-medium truncate text-sm sm:text-base">{beer.name}</h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {beer.brewery} • {beer.style}
                         </p>
-                        <div className="flex items-center mt-1">
-                          <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">{beer.rating}/5</span>
-                          <span className="text-xs text-muted-foreground ml-2">by {beer.reviewer}</span>
+                        <div className="flex items-center mt-1 flex-wrap gap-1">
+                          <span className="text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full">
+                            {beer.rating}/5
+                          </span>
+                          <span className="text-xs text-muted-foreground">by {beer.reviewer}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -229,8 +245,10 @@ export default function SearchBar() {
             </div>
           ) : (
             <div className="p-4 text-center text-muted-foreground">
-              No beers found matching "{searchQuery}"
-              <div className="text-xs mt-1">Try searching by beer name, brewery, style, or reviewer</div>
+              <div className="text-sm sm:text-base">No beers found matching "{searchQuery}"</div>
+              <div className="text-xs sm:text-sm mt-2 text-muted-foreground/70">
+                Try searching by beer name, brewery, style, or reviewer
+              </div>
             </div>
           )}
         </div>

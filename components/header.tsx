@@ -39,25 +39,28 @@ export default function Header() {
   if (isAuthPage) return null
 
   return (
-    <header className="border-b">
-      <div className="container max-w-4xl py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
-          <Beer className="h-6 w-6 text-amber-500" />
-          <span className="font-bold text-xl">BeerUp</span>
+    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-3 sm:py-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
+          <Beer className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500" />
+          <span className="font-bold text-lg sm:text-xl">BeerUp</span>
         </Link>
 
         <nav>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm" className="flex items-center space-x-1 sm:space-x-2">
                   <User className="h-4 w-4" />
-                  <span>Account</span>
+                  <span className="hidden sm:inline">Account</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem asChild>
-                  <Link href="/account">Profile Settings</Link>
+                  <Link href="/account" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Profile Settings
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="h-4 w-4 mr-2" />
@@ -67,7 +70,9 @@ export default function Header() {
             </DropdownMenu>
           ) : (
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/auth/login">Sign In</Link>
+              <Link href="/auth/login" className="text-sm sm:text-base">
+                Sign In
+              </Link>
             </Button>
           )}
         </nav>

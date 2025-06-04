@@ -12,7 +12,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "BeerUp - Beer Review App",
   description: "Review and discover great beers",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -26,8 +26,14 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider>
             <ToastProvider>
-              <Header />
-              <main>{children}</main>
+              <div className="min-h-screen bg-background">
+                <Header />
+                <main className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+                  <div className="py-4 sm:py-6 lg:py-8">
+                    {children}
+                  </div>
+                </main>
+              </div>
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>

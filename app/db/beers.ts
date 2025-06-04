@@ -1,72 +1,68 @@
-import { supabase } from "@/lib/supabase/client";
+// ⚠️ DEPRECATED: This file is kept for backward compatibility only
+// 
+// For new code, use:
+// - Server actions: @/lib/actions/beers
+// - Client components: @/lib/client/beers  
+// - Direct repository access: @/lib/data/beers
+// - Service layer: @/lib/services/beers
+
+// Legacy file - use @/lib/client/beers or @/lib/actions/beers instead
+import { getBeersClient } from "@/lib/client/beers";
+import type { Beer, NewBeer } from "@/lib/types";
+import { createBeersRepository } from "@/lib/data/beers";
+import { type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 
-type Beer = Database["public"]["Tables"]["beers"]["Row"];
-type NewBeer = Database["public"]["Tables"]["beers"]["Insert"];
-
-export async function getBeers() {
-  const { data, error } = await supabase.from("beers").select("*").order("created_at", { ascending: false });
-
-  if (error) {
+export async function _getBeersFromDb(supabaseClient: SupabaseClient<Database>) {
+  const repository = createBeersRepository(supabaseClient);
+  try {
+    return await repository.findAll();
+  } catch (error) {
     console.error("Error fetching beers:", error);
     return [];
   }
-
-  return data as Beer[];
 }
 
-export async function getBeerById(id: string) {
-  const { data, error } = await supabase.from("beers").select("*").eq("id", id).single();
+export async function getBeersClientSide() {
+  return getBeersClient();
+}
 
-  if (error) {
+export async function getBeerById(supabaseClient: SupabaseClient<Database>, id: string) {
+  const repository = createBeersRepository(supabaseClient);
+  try {
+    return await repository.findById(id);
+  } catch (error) {
     console.error("Error fetching beer:", error);
     return null;
   }
-
-  return data as Beer;
 }
 
-export async function searchBeers(query: string) {
-  const { data, error } = await supabase
-    .from("beers")
-    .select("*")
-    .or(`name.ilike.%${query}%,brewery.ilike.%${query}%,style.ilike.%${query}%`)
-    .order("created_at", { ascending: false });
-
-  if (error) {
+export async function searchBeers(supabaseClient: SupabaseClient<Database>, query: string) {
+  const repository = createBeersRepository(supabaseClient);
+  try {
+    return await repository.search(query);
+  } catch (error) {
     console.error("Error searching beers:", error);
     return [];
   }
-
-  return data as Beer[];
 }
 
-export async function createBeer(beer: NewBeer) {
-  const { data, error } = await supabase.from("beers").insert(beer).select().single();
-
-  if (error) {
+export async function createBeer(supabaseClient: SupabaseClient<Database>, beer: NewBeer) {
+  const repository = createBeersRepository(supabaseClient);
+  try {
+    return await repository.create(beer);
+  } catch (error) {
     console.error("Error creating beer:", error);
     return null;
   }
-  return data as Beer;
 }
 
-export async function findExistingBeer(name: string, brewery: string, style: string): Promise<Beer | null> {
-  const { data, error } = await supabase
-    .from("beers")
-    .select("id")
-    .eq("name", name)
-    .eq("brewery", brewery)
-    .eq("style", style)
-    .limit(1);
-
-  if (error) {
+export async function findExistingBeer(supabaseClient: SupabaseClient<Database>, name: string, brewery: string, style: string): Promise<Beer | null> {
+  const repository = createBeersRepository(supabaseClient);
+  try {
+    return await repository.findExisting(name, brewery, style);
+  } catch (error) {
     console.error("Error finding existing beer:", error);
     return null;
   }
-
-  if (data && data.length > 0) {
-    return data[0] as Beer;
-  }
-  return null;
 } 
