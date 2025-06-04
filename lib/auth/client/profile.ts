@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import type { Database } from "@/lib/database.types";
+// import type { Database } from "@/lib/database.types"; // Will be removed as types come from shared
+import type { Profile, UpdateProfile } from "@/lib/types"; // Import from new shared types
 
 export const checkUsernameExists = async (username: string): Promise<{
   exists: boolean;
@@ -50,7 +51,7 @@ export const createUserProfile = async (
   }
 };
 
-export const getProfile = async (userId: string): Promise<Profile | null> => {
+export const getUserProfile = async (userId: string): Promise<Profile | null> => {
   try {
     const { data, error } = await supabase
       .from("profiles")
@@ -69,7 +70,7 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
   }
 };
 
-export const updateProfile = async (
+export const updateUserProfile = async (
   userId: string,
   profileData: UpdateProfile
 ): Promise<Profile | null> => {
@@ -95,6 +96,6 @@ export const updateProfile = async (
   }
 };
 
-// Add type definitions that were in lib/profiles.ts
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type UpdateProfile = Database["public"]["Tables"]["profiles"]["Update"]; 
+// Remove local type definitions
+// type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+// type UpdateProfile = Database["public"]["Tables"]["profiles"]["Update"]; 

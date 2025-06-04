@@ -4,14 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import type { FullReview } from "@/lib/types";
 
 // Interface for the service methods
-export interface IReviewService {
+export interface ReviewService {
   insertReview: (reviewData: TablesInsert<"reviews">) => Promise<{ data: { id: string } | null; error: any }>;
   getReviewsByBeerId: (beerId: string) => Promise<{ data: Tables<"reviews">[] | null; error: any }>;
   getUserReviewForBeer: (beerId: string, userId: string) => Promise<{ data: Tables<"reviews"> | null; error: any }>;
   getUserFullReviews: (userId: string) => Promise<{ data: FullReview[] | null; error: any }>;
+  getOtherReviews: (beerId: string, userId: string | undefined, page: number, pageSize: number) => Promise<{ data: any[] | null; error: any }>;
 }
 
-export function createServerReviewService(): IReviewService {
+export function createServerReviewService(): ReviewService {
   // Note: Supabase client will be created inside each async method below
 
   async function insertReview(
@@ -107,12 +108,52 @@ export function createServerReviewService(): IReviewService {
       return { data: null, error: e };
     }
   }
+  async function getOtherReviews(
+    beerId: string,
+    userId: string | undefined,
+    page: number,
+    pageSize: number
+  ): Promise<{ data: any[] | null; error: any }> {
+    try {
+      const supabase = await createClient();
+      let query = supabase
+        .from("reviews")
+        .select(`
+          *,
+          profiles:user_id (username)
+        `)
+        .eq("beer_id", beerId);
+
+      if (userId) {
+        query = query.neq("user_id", userId);
+      }
+
+      query = query
+        .order("created_at", { ascending: false })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Service - Error fetching other reviews:", error);
+        return { data: [], error };
+      }
+
+      return { data, error: null };
+    } catch (e: any) {
+      console.error("Service - Unexpected error fetching other reviews:", e);
+      return { data: null, error: e };
+    }
+  }
+
+    
   
   return {
     insertReview,
     getReviewsByBeerId,
     getUserReviewForBeer,
     getUserFullReviews,
+    getOtherReviews,
   };
 }
 

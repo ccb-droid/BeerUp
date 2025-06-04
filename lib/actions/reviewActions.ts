@@ -63,7 +63,7 @@ export async function addReview(
   return { success: true, reviewId: newReview.id };
 }
 
-export async function getReviewsAction(
+export async function getReviewsByBeerIdAction(
   beerId: string
 ): Promise<{ data: Tables<"reviews">[] | null; error: string | null }> {
   const { data, error } = await reviewService.getReviewsByBeerId(beerId);
@@ -121,3 +121,17 @@ export async function getUserFullReviewsAction(): Promise<{
 
   return { data, error: null };
 } 
+
+export async function getOtherReviewsAction(
+  beerId: string,
+  userId: string | undefined,
+  page: number,
+  pageSize: number
+): Promise<{ data: any[] | null; error: string | null }> {
+  const { data, error } = await reviewService.getOtherReviews(beerId, userId, page, pageSize);
+
+  if (error) {
+    return { data: null, error: (error as any)?.message || "Failed to fetch other reviews." };
+  }
+  return { data, error: null };
+}

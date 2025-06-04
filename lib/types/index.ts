@@ -1,5 +1,4 @@
 // Re-export database types for easier importing
-export type { Database } from "../database.types";
 import type { Database } from "../database.types";
 
 // Specific table types

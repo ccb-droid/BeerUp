@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { addReview } from '@/lib/actions/reviewActions';
 // Assuming useUser hook exists in your auth setup to get client-side user
 // If not, you might need to use Supabase client directly to get user/session
-import { useAuth } from '@/contexts/auth-context'; 
+import { useAuth } from '@/lib/auth/client'; 
 import { toast } from 'sonner'; // Assuming you use sonner for toasts
 
 interface BeerReviewInteractiveProps {

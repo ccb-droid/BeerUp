@@ -21,7 +21,6 @@ export { supabase } from "./supabase/client";
 
 // Auth utilities
 export * from "./auth";
-export * from "./auth.server";
 
 // Storage utilities
 export * from "./storage";

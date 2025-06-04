@@ -10,8 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { useAuth } from "@/contexts/auth-context"
-import { getProfile, updateProfile } from "@/app/db/profile"
+import { useAuth } from "@/lib/auth/client"
+import { getUserProfile, updateUserProfile } from "@/lib/auth/client"
 
 export default function AccountPage() {
   const [username, setUsername] = useState("")
@@ -30,7 +30,7 @@ export default function AccountPage() {
 
       setEmail(user.email || "")
 
-      const profile = await getProfile(user.id)
+      const profile = await getUserProfile(user.id)
       if (profile) {
         setUsername(profile.username || "")
         setDob(profile.date_of_birth || "")
@@ -51,7 +51,7 @@ export default function AccountPage() {
     setSuccess("")
 
     try {
-      const updatedProfile = await updateProfile(user.id, {
+      const updatedProfile = await updateUserProfile(user.id, {
         username,
         date_of_birth: dob,
       })
@@ -81,7 +81,7 @@ export default function AccountPage() {
     setSuccess("")
 
     try {
-      const updatedProfile = await updateProfile(user.id, {
+      const updatedProfile = await updateUserProfile(user.id, {
         notifications_enabled: value,
       })
 

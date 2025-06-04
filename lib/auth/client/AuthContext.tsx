@@ -8,13 +8,13 @@ import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js"
 import {
   checkUsernameExists,
   createUserProfile,
-} from "@/app/db/profile"
+} from "./profile" // Updated from @/app/db/profile
 import {
   signInUser,
   signUpUser,
   signOutUser,
   resetUserPassword,
-} from "@/app/db/auth"
+} from "./api" // Updated from @/app/db/auth
 
 type AuthContextType = {
   user: User | null
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await signInUser(email, password)
+      const { error } = await signInUser(email, password) // Will be updated
       // onAuthStateChange will handle setting user and session if successful
       // No need to manually setSession/setUser here if onAuthStateChange is robust
       return { error }
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Check if username exists using the new db function
       const { exists: usernameExists, error: checkError } =
-        await checkUsernameExists(username)
+        await checkUsernameExists(username) // Will be updated
 
       if (checkError) {
         console.error("Error checking existing user:", checkError)
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Sign up the user using the new db function
-      const { data, error: signUpError } = await signUpUser(
+      const { data, error: signUpError } = await signUpUser( // Will be updated
         email,
         password,
         username,
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Create user profile using the new db function
-      const { error: profileError } = await createUserProfile(
+      const { error: profileError } = await createUserProfile( // Will be updated
         data.user,
         username,
         dob
@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { error } = await signOutUser()
+      const { error } = await signOutUser() // Will be updated
       // onAuthStateChange will handle setting user and session to null
       if (error) {
         console.error("Error in signOut:", error)
@@ -147,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await resetUserPassword(email)
+      const { error } = await resetUserPassword(email) // Will be updated
       return { error }
     } catch (error) {
       console.error("Error in resetPassword:", error)
@@ -178,4 +178,4 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
-}
+} 

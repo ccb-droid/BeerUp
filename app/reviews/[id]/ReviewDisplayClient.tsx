@@ -10,31 +10,30 @@ import { Badge } from "@/components/ui/badge"
 import OtherReviews from "@/components/other-reviews"
 import { Card, CardContent } from "@/components/ui/card"
 
-interface BeerData {
+export interface BeerData {
   id: string
   name: string
   brewery: string
-  style: string
+  style: string | null
   created_at: string
-  abv?: number
-  description?: string
-  image_url?: string
+  abv?: number | null
+  description?: string | null
+  image_url?: string | null
 }
 
-interface UserReviewData {
+export interface UserReviewData {
   id: string
   user_id: string
   beer_id: string;
   rating: number
   review_text: string
-  images: string[]
   created_at: string
   typically_drinks: boolean
 }
 
 interface ReviewDisplayProps {
   beerData: BeerData
-  userReview: UserReviewData // This will be null if no review exists, or the review object
+  userReview: UserReviewData | null
   hasUserReview: boolean
   isOwner: boolean
   userId?: string
@@ -49,8 +48,6 @@ export default function ReviewDisplayClient({
   userId,
   paramsId,
 }: ReviewDisplayProps) {
-  const [selectedImage, setSelectedImage] = useState(0)
-
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -94,50 +91,10 @@ export default function ReviewDisplayClient({
               <CardContent className="p-0">
                 <div className="grid lg:grid-cols-5 gap-0">
                   {/* Image Gallery Section */}
-                  <div className="lg:col-span-3 p-6 space-y-4">
-                    {userReview.images && userReview.images.length > 0 ? (
-                      <>
-                        <div className="aspect-video relative rounded-xl overflow-hidden shadow-lg bg-gray-100">
-                          <Image
-                            src={userReview.images[selectedImage] || "/placeholder.svg?height=400&width=600"}
-                            alt={beerData.name}
-                            fill
-                            className="object-cover transition-all duration-300"
-                          />
-                        </div>
-                        
-                        {userReview.images.length > 1 && (
-                          <div className="flex space-x-3 overflow-x-auto pb-2">
-                            {userReview.images.map((image, index) => (
-                              <div
-                                key={index}
-                                className={`relative h-20 w-20 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 flex-shrink-0 ${
-                                  selectedImage === index
-                                    ? "ring-4 ring-amber-400 scale-105"
-                                    : "ring-2 ring-gray-200 hover:ring-amber-300 hover:scale-105"
-                                }`}
-                                onClick={() => setSelectedImage(index)}
-                              >
-                                <Image
-                                  src={image}
-                                  alt={`${beerData.name} ${index + 1}`}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="aspect-video relative rounded-xl overflow-hidden shadow-lg bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
-                        <Beer className="h-24 w-24 text-amber-400" />
-                      </div>
-                    )}
-                  </div>
+                  {/* <div className="lg:col-span-3 p-6 space-y-4"> ... </div> */}
 
                   {/* Review Details Section */}
-                  <div className="lg:col-span-2 p-6 bg-gradient-to-br from-gray-50 to-white space-y-6">
+                  <div className="lg:col-span-5 p-6 bg-gradient-to-br from-gray-50 to-white space-y-6">
                     {/* Rating Section */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">

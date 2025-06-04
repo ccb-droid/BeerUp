@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { getOtherReviews } from "@/app/db/reviews"
+import { getOtherReviewsAction } from "@/lib/actions/reviewActions"
 
 // Define a type for the review data
 interface ReviewProfile {
@@ -94,9 +94,9 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
       // The code below is commented out to prevent runtime errors
       // Uncomment when your Supabase database is properly set up
       
-      const { data, error } = await getOtherReviews(beerId, userId, page, pageSize);
+      const { data, error } = await getOtherReviewsAction(beerId, userId, page, pageSize);
       
-      if (error) {
+      if (error || !data) {
         console.error('Error fetching reviews:', error);
         // Use mock data if there's an error
         if (page === 0) {
@@ -113,9 +113,9 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
         }
         
         if (page === 0) {
-          setReviews(data);
+          setReviews(data as ReviewData[]);
         } else {
-          setReviews(prev => [...prev, ...data]);
+          setReviews(prev => [...prev, ...(data as ReviewData[])]);
         }
       }
       
