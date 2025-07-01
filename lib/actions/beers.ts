@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerBeersService } from "../services/beers";
+import { createServerBeersService } from "../services/beers-server";
 import type { Beer, NewBeer } from "../types";
 
 const beersService = createServerBeersService();

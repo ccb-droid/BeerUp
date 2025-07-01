@@ -11,56 +11,92 @@ const reviewService = createServerReviewService();
 export async function addReview(
   formData: FormData
 ): Promise<{ success: boolean; error?: string; reviewId?: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    
+    // Get and validate authentication
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    return { success: false, error: "User not authenticated." };
-  }
+    if (authError) {
+      console.error("Action - Auth error:", authError);
+      return { success: false, error: "Authentication error occurred." };
+    }
 
-  const beerId = formData.get("beerId") as string;
-  const ratingString = formData.get("rating") as string;
-  const reviewText = formData.get("reviewText") as string | null;
+    if (!user) {
+      console.error("Action - No authenticated user found");
+      return { success: false, error: "User not authenticated." };
+    }
 
-  if (!beerId || !ratingString) {
-    return { success: false, error: "Missing beer ID or rating." };
-  }
+    console.log("Action - Authenticated user:", { id: user.id, email: user.email });
 
-  const rating = parseInt(ratingString, 10);
-  if (isNaN(rating) || rating < 1 || rating > 5) {
+    const beerId = formData.get("beerId") as string;
+    const ratingString = formData.get("rating") as string;
+    const reviewText = formData.get("reviewText") as string | null;
+
+    if (!beerId || !ratingString) {
+      return { success: false, error: "Missing beer ID or rating." };
+    }
+
+    const rating = parseInt(ratingString, 10);
+    if (isNaN(rating) || rating < 1 || rating > 5) {
+      return {
+        success: false,
+        error: "Invalid rating. Must be between 1 and 5.",
+      };
+    }
+
+    const reviewData: TablesInsert<"reviews"> = {
+      beer_id: beerId,
+      user_id: user.id,
+      rating: rating,
+      review_text: reviewText || null,
+      // typically_drinks can be omitted to use database default or set explicitly
+      // typically_drinks: false,
+    };
+
+    console.log("Action - Calling review service with data:", {
+      beer_id: reviewData.beer_id,
+      user_id: reviewData.user_id,
+      rating: reviewData.rating
+    });
+
+    const { data: newReview, error: serviceError } = await reviewService.insertReview(reviewData);
+
+    if (serviceError || !newReview?.id) {
+      console.error("Action - Error inserting review via service:", serviceError);
+      
+      // Handle specific RLS errors
+      if (serviceError?.code === 'RLS_ERROR') {
+        return {
+          success: false,
+          error: serviceError.message || "Permission denied. Please try logging out and back in.",
+        };
+      }
+      
+      return {
+        success: false,
+        error: (serviceError as any)?.message || "Could not submit review via service.",
+      };
+    }
+
+    console.log("Action - Successfully created review:", newReview.id);
+
+    // Revalidate the beer detail page and potentially beer listings if they show review summaries
+    revalidatePath(`/beers/${beerId}`);
+    revalidatePath("/beers"); // If your main beer listing shows average ratings etc.
+    // Consider revalidating user profile pages if they list user\'s reviews
+
+    return { success: true, reviewId: newReview.id };
+  } catch (error) {
+    console.error("Action - Unexpected error in addReview:", error);
     return {
       success: false,
-      error: "Invalid rating. Must be between 1 and 5.",
+      error: "An unexpected error occurred while adding the review.",
     };
   }
-
-  const reviewData: TablesInsert<"reviews"> = {
-    beer_id: beerId,
-    user_id: user.id,
-    rating: rating,
-    review_text: reviewText || null,
-    // typically_drinks can be omitted to use database default or set explicitly
-    // typically_drinks: false,
-  };
-
-  const { data: newReview, error: serviceError } = await reviewService.insertReview(reviewData);
-
-  if (serviceError || !newReview?.id) {
-    console.error("Action - Error inserting review via service:", serviceError);
-    return {
-      success: false,
-      error: (serviceError as any)?.message || "Could not submit review via service.",
-    };
-  }
-
-  // Revalidate the beer detail page and potentially beer listings if they show review summaries
-  revalidatePath(`/beers/${beerId}`);
-  revalidatePath("/beers"); // If your main beer listing shows average ratings etc.
-  // Consider revalidating user profile pages if they list user\'s reviews
-
-  return { success: true, reviewId: newReview.id };
 }
 
 export async function getReviewsByBeerIdAction(
@@ -132,6 +168,18 @@ export async function getOtherReviewsAction(
 
   if (error) {
     return { data: null, error: (error as any)?.message || "Failed to fetch other reviews." };
+  }
+  return { data, error: null };
+}
+
+export async function getRecentReviewsAction(
+  page: number,
+  pageSize: number
+): Promise<{ data: any[] | null; error: string | null }> {
+  const { data, error } = await reviewService.getRecentReviews(page, pageSize);
+
+  if (error) {
+    return { data: null, error: (error as any)?.message || "Failed to fetch recent reviews." };
   }
   return { data, error: null };
 }

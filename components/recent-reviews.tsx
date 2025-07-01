@@ -6,118 +6,37 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 import Link from "next/link"
+import { getRecentReviewsAction } from "@/lib/actions/reviewActions"
 
-// Sample mock data for recent reviews with UUID-style IDs
-const mockRecentReviews = [
-  {
-    id: "d290f1ee-6c54-4b01-90e6-d701748f0851",
-    user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f25",
-    beer_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-    rating: 4.5,
-    review_text:
-      "Fantastic IPA with a perfect balance of hops and citrus notes. The aroma is incredible and the finish is smooth.",
-    typically_drinks: true,
-    images: ["/placeholder.svg?height=200&width=300"],
-    created_at: "2023-05-18T14:30:00Z",
-    updated_at: "2023-05-18T14:30:00Z",
-    profiles: {
-      username: "beerLover42",
-    },
-    beers: {
-      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-      name: "Hazy Wonder",
-      brewery: "Lagunitas",
-      style: "IPA",
-    },
-  },
-  {
-    id: "d290f1ee-6c54-4b01-90e6-d701748f0852",
-    user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f26",
-    beer_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
-    rating: 4.8,
-    review_text:
-      "This stout is absolutely divine. Rich, chocolatey notes with a hint of coffee. Perfect for a cold evening.",
-    typically_drinks: true,
-    images: ["/placeholder.svg?height=200&width=300"],
-    created_at: "2023-05-15T09:15:00Z",
-    updated_at: "2023-05-15T09:15:00Z",
-    profiles: {
-      username: "craftBeerFan",
-    },
-    beers: {
-      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
-      name: "Guinness Draught",
-      brewery: "Guinness",
-      style: "Stout",
-    },
-  },
-  {
-    id: "d290f1ee-6c54-4b01-90e6-d701748f0853",
-    user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f27",
-    beer_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
-    rating: 4.2,
-    review_text:
-      "A refreshing Belgian white with subtle citrus and coriander notes. Very drinkable and perfect for summer.",
-    typically_drinks: false,
-    images: ["/placeholder.svg?height=200&width=300"],
-    created_at: "2023-05-10T18:45:00Z",
-    updated_at: "2023-05-10T18:45:00Z",
-    profiles: {
-      username: "hopHead",
-    },
-    beers: {
-      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
-      name: "Blue Moon",
-      brewery: "Blue Moon Brewing Co.",
-      style: "Belgian White",
-    },
-  },
-  {
-    id: "d290f1ee-6c54-4b01-90e6-d701748f0854",
-    user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f28",
-    beer_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14",
-    rating: 3.9,
-    review_text: "A solid pale ale with good hop character. Not the best I've had, but definitely worth trying.",
-    typically_drinks: true,
-    images: ["/placeholder.svg?height=200&width=300"],
-    created_at: "2023-05-05T12:30:00Z",
-    updated_at: "2023-05-05T12:30:00Z",
-    profiles: {
-      username: "aleEnthusiast",
-    },
-    beers: {
-      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14",
-      name: "Sierra Nevada Pale Ale",
-      brewery: "Sierra Nevada",
-      style: "Pale Ale",
-    },
-  },
-  {
-    id: "d290f1ee-6c54-4b01-90e6-d701748f0855",
-    user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f29",
-    beer_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15",
-    rating: 4.7,
-    review_text:
-      "This porter has amazing chocolate and coffee notes. The mouthfeel is smooth and the finish is perfect.",
-    typically_drinks: true,
-    images: ["/placeholder.svg?height=200&width=300"],
-    created_at: "2023-05-01T16:20:00Z",
-    updated_at: "2023-05-01T16:20:00Z",
-    profiles: {
-      username: "darkBeerLover",
-    },
-    beers: {
-      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15",
-      name: "Deschutes Black Butte Porter",
-      brewery: "Deschutes",
-      style: "Porter",
-    },
-  },
-]
+interface ReviewProfile {
+  username: string;
+}
+
+interface ReviewBeer {
+  id: string;
+  name: string;
+  brewery: string;
+  style: string;
+}
+
+interface ReviewData {
+  id: string;
+  user_id: string;
+  beer_id: string;
+  rating: number;
+  review_text: string;
+  typically_drinks: boolean;
+  images?: string[];
+  created_at: string;
+  updated_at: string;
+  profiles: ReviewProfile | null;
+  beers: ReviewBeer | null;
+}
 
 export default function RecentReviews() {
-  const [reviews, setReviews] = useState([])
+  const [reviews, setReviews] = useState<ReviewData[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const pageSize = 5
@@ -128,60 +47,38 @@ export default function RecentReviews() {
 
   async function fetchReviews() {
     setLoading(true)
+    setError(null)
 
     try {
-      // Always use mock data for now to avoid runtime errors
-      setReviews(mockRecentReviews)
-      setHasMore(false)
-      setLoading(false)
-      return
+      const { data, error: fetchError } = await getRecentReviewsAction(page, pageSize);
 
-      // The code below is commented out to prevent runtime errors
-      // Uncomment when your Supabase database is properly set up
-      /*
-      const { data, error } = await supabase
-        .from("reviews")
-        .select(`
-          *,
-          profiles:user_id (username),
-          beers:beer_id (id, name, brewery, style)
-        `)
-        .order("created_at", { ascending: false })
-        .range(page * pageSize, (page + 1) * pageSize - 1)
-
-      if (error) {
-        console.error("Error fetching reviews:", error)
-        // Use mock data if there's an error
+      if (fetchError) {
+        console.error("Error fetching recent reviews:", fetchError);
+        setError(fetchError);
+        setHasMore(false);
+      } else if (!data || data.length === 0) {
         if (page === 0) {
-          setReviews(mockRecentReviews)
+          setReviews([]);
         }
-        setHasMore(false)
-      } else if (data.length === 0 && page === 0) {
-        // Use mock data if no reviews are found
-        setReviews(mockRecentReviews)
-        setHasMore(false)
+        setHasMore(false);
       } else {
         if (data.length < pageSize) {
-          setHasMore(false)
+          setHasMore(false);
         }
 
         if (page === 0) {
-          setReviews(data)
+          setReviews(data as ReviewData[]);
         } else {
-          setReviews((prev) => [...prev, ...data])
+          setReviews((prev) => [...prev, ...(data as ReviewData[])]);
         }
       }
-      */
     } catch (e) {
-      console.error("Error in fetchReviews:", e)
-      // Fallback to mock data
-      if (page === 0) {
-        setReviews(mockRecentReviews)
-      }
-      setHasMore(false)
+      console.error("Unexpected error in fetchReviews:", e);
+      setError("An unexpected error occurred while loading reviews.");
+      setHasMore(false);
     }
 
-    setLoading(false)
+    setLoading(false);
   }
 
   const loadMore = () => {
@@ -196,6 +93,36 @@ export default function RecentReviews() {
 
   if (loading && reviews.length === 0) {
     return <div className="text-center py-10">Loading recent reviews...</div>
+  }
+
+  if (error && reviews.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-destructive text-lg">Error loading reviews</p>
+        <p className="text-muted-foreground mt-2">{error}</p>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            setPage(0);
+            fetchReviews();
+          }}
+          className="mt-4"
+        >
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (reviews.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-muted-foreground text-lg">No reviews yet</p>
+        <p className="text-muted-foreground mt-2">
+          Be the first to share your beer experience!
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -234,7 +161,7 @@ export default function RecentReviews() {
                   </div>
                 </div>
 
-                <Link href={`/reviews/${review.beer_id}`} className="hover:underline">
+                <Link href={`/beer/${review.beer_id}`} className="hover:underline">
                   <h3 className="text-xl font-bold">{review.beers?.name || "Unknown Beer"}</h3>
                 </Link>
                 <p className="text-muted-foreground mb-2">
@@ -244,7 +171,7 @@ export default function RecentReviews() {
                 <p className="line-clamp-3 mb-2">{review.review_text}</p>
 
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/reviews/${review.beer_id}`}>Read Full Review</Link>
+                  <Link href={`/beer/${review.beer_id}`}>Read Full Review</Link>
                 </Button>
               </div>
             </div>
@@ -252,11 +179,26 @@ export default function RecentReviews() {
         </Card>
       ))}
 
-      {hasMore && (
+      {error && reviews.length > 0 && (
+        <div className="text-center pt-2">
+          <p className="text-destructive text-sm mb-2">Failed to load more reviews: {error}</p>
+          <Button variant="outline" onClick={() => fetchReviews()} disabled={loading}>
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {hasMore && !error && (
         <div className="text-center pt-2">
           <Button variant="outline" onClick={loadMore} disabled={loading}>
             {loading ? "Loading..." : "Load More Reviews"}
           </Button>
+        </div>
+      )}
+
+      {!hasMore && !error && reviews.length > 0 && (
+        <div className="text-center pt-2">
+          <p className="text-muted-foreground text-sm">No more reviews to load</p>
         </div>
       )}
     </div>

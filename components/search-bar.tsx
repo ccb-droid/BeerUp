@@ -7,70 +7,18 @@ import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
+import { searchBeersClient } from "@/lib/client/beers"
+import type { Beer } from "@/lib/types"
 
-// Beer review type
-type BeerReview = {
-  id: string
-  name: string
-  brewery: string
-  style: string
-  rating: number
-  reviewer: string
-  reviewText: string
+// Beer result type for search
+type BeerSearchResult = Beer & {
+  averageRating?: number;
+  reviewCount?: number;
 }
-
-// Mock data that represents all available beer reviews
-const allBeerReviews: BeerReview[] = [
-  {
-    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-    name: "Hazy Wonder",
-    brewery: "Lagunitas",
-    style: "IPA",
-    rating: 4.5,
-    reviewer: "beerLover42",
-    reviewText: "Fantastic IPA with a perfect balance of hops and citrus notes.",
-  },
-  {
-    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
-    name: "Guinness Draught",
-    brewery: "Guinness",
-    style: "Stout",
-    rating: 4.8,
-    reviewer: "craftBeerFan",
-    reviewText: "This stout is absolutely divine. Rich, chocolatey notes with a hint of coffee.",
-  },
-  {
-    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
-    name: "Blue Moon",
-    brewery: "Blue Moon Brewing Co.",
-    style: "Belgian White",
-    rating: 4.2,
-    reviewer: "hopHead",
-    reviewText: "A refreshing Belgian white with subtle citrus and coriander notes.",
-  },
-  {
-    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14",
-    name: "Sierra Nevada Pale Ale",
-    brewery: "Sierra Nevada",
-    style: "Pale Ale",
-    rating: 3.9,
-    reviewer: "aleEnthusiast",
-    reviewText: "A solid pale ale with good hop character. Not the best I've had, but definitely worth trying.",
-  },
-  {
-    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15",
-    name: "Deschutes Black Butte Porter",
-    brewery: "Deschutes",
-    style: "Porter",
-    rating: 4.7,
-    reviewer: "darkBeerLover",
-    reviewText: "This porter has amazing chocolate and coffee notes. The mouthfeel is smooth.",
-  },
-]
 
 export default function SearchBar() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<BeerReview[]>([])
+  const [searchResults, setSearchResults] = useState<BeerSearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -94,8 +42,8 @@ export default function SearchBar() {
     }
   }, [])
 
-  // Function to search through beer reviews
-  const searchBeers = (query: string) => {
+  // Function to search through beers
+  const searchBeers = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([])
       setShowResults(false)
@@ -103,26 +51,33 @@ export default function SearchBar() {
       return
     }
 
-    const lowercaseQuery = query.toLowerCase()
-    const results = allBeerReviews.filter(
-      (beer) =>
-        beer.name.toLowerCase().includes(lowercaseQuery) ||
-        beer.brewery.toLowerCase().includes(lowercaseQuery) ||
-        beer.style.toLowerCase().includes(lowercaseQuery) ||
-        beer.reviewer.toLowerCase().includes(lowercaseQuery) ||
-        beer.reviewText.toLowerCase().includes(lowercaseQuery),
-    )
+    try {
+      setIsSearching(true)
+      const results = await searchBeersClient(query)
+      
+      // Transform Beer[] to BeerSearchResult[] with placeholder stats
+      const searchResults: BeerSearchResult[] = results.map(beer => ({
+        ...beer,
+        averageRating: undefined, // We could add this later if needed
+        reviewCount: undefined
+      }))
 
-    setSearchResults(results)
-    setShowResults(true)
-    setSelectedIndex(-1)
+      setSearchResults(searchResults)
+      setShowResults(true)
+      setSelectedIndex(-1)
+    } catch (error) {
+      console.error("Error searching beers:", error)
+      setSearchResults([])
+      setShowResults(false)
+    } finally {
+      setIsSearching(false)
+    }
   }
 
   // Search when the user types (with a small delay)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       searchBeers(searchQuery)
-      setIsSearching(false)
     }, 300)
 
     return () => clearTimeout(timeoutId)
@@ -170,7 +125,7 @@ export default function SearchBar() {
 
     if (beerId) {
       // Navigate programmatically
-      window.location.href = `/reviews/${beerId}`
+      window.location.href = `/beer/${beerId}`
     }
   }
 
@@ -220,7 +175,7 @@ export default function SearchBar() {
                     <CardContent className="p-3 flex items-center space-x-3">
                       <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                         <Image
-                          src="/placeholder.svg?height=48&width=48"
+                          src={beer.images?.[0] || "/placeholder.svg?height=48&width=48"}
                           alt={beer.name}
                           fill
                           className="object-cover"
@@ -229,14 +184,13 @@ export default function SearchBar() {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium truncate text-sm sm:text-base">{beer.name}</h4>
                         <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          {beer.brewery} • {beer.style}
+                          {beer.brewery}{beer.style ? ` • ${beer.style}` : ""}
                         </p>
-                        <div className="flex items-center mt-1 flex-wrap gap-1">
-                          <span className="text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full">
-                            {beer.rating}/5
-                          </span>
-                          <span className="text-xs text-muted-foreground">by {beer.reviewer}</span>
-                        </div>
+                        {beer.description && (
+                          <p className="text-xs text-muted-foreground truncate mt-1">
+                            {beer.description}
+                          </p>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -247,7 +201,7 @@ export default function SearchBar() {
             <div className="p-4 text-center text-muted-foreground">
               <div className="text-sm sm:text-base">No beers found matching "{searchQuery}"</div>
               <div className="text-xs sm:text-sm mt-2 text-muted-foreground/70">
-                Try searching by beer name, brewery, style, or reviewer
+                Try searching by beer name, brewery, or style
               </div>
             </div>
           )}

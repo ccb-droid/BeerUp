@@ -1,24 +1,15 @@
 import { createClient } from "../supabase/server";
-import { supabase as browserClient } from "../supabase/client";
 import { BeersRepository } from "../data/beers";
 import type { Beer, NewBeer, ApiResponse } from "../types";
 
 /**
- * Business logic layer for beer operations
- * Handles client selection, error handling, and business rules
+ * Server-side business logic layer for beer operations
+ * Only uses the server Supabase client
  */
-export class BeersService {
-  constructor(private readonly isServer: boolean = true) {
-    // We'll initialize the repository in each method to handle async client creation
-  }
-
+export class ServerBeersService {
   private async getRepository(): Promise<BeersRepository> {
-    if (this.isServer) {
-      const client = await createClient();
-      return new BeersRepository(client);
-    } else {
-      return new BeersRepository(browserClient);
-    }
+    const client = await createClient();
+    return new BeersRepository(client);
   }
 
   async getAllBeers(): Promise<ApiResponse<Beer[]>> {
@@ -27,7 +18,7 @@ export class BeersService {
       const beers = await repo.findAll();
       return { data: beers, error: null };
     } catch (error) {
-      console.error("BeersService: Failed to get all beers:", error);
+      console.error("ServerBeersService: Failed to get all beers:", error);
       return { 
         data: null, 
         error: error instanceof Error ? error.message : "Unknown error" 
@@ -41,7 +32,7 @@ export class BeersService {
       const beer = await repo.findById(id);
       return { data: beer, error: null };
     } catch (error) {
-      console.error("BeersService: Failed to get beer by id:", error);
+      console.error("ServerBeersService: Failed to get beer by id:", error);
       return { 
         data: null, 
         error: error instanceof Error ? error.message : "Unknown error" 
@@ -59,7 +50,7 @@ export class BeersService {
       const beers = await repo.search(query.trim());
       return { data: beers, error: null };
     } catch (error) {
-      console.error("BeersService: Failed to search beers:", error);
+      console.error("ServerBeersService: Failed to search beers:", error);
       return { 
         data: null, 
         error: error instanceof Error ? error.message : "Unknown error" 
@@ -104,7 +95,7 @@ export class BeersService {
 
       return { data: beer, error: null };
     } catch (error) {
-      console.error("BeersService: Failed to create beer:", error);
+      console.error("ServerBeersService: Failed to create beer:", error);
       return { 
         data: null, 
         error: error instanceof Error ? error.message : "Unknown error" 
@@ -132,7 +123,7 @@ export class BeersService {
 
       return { data: newBeer, error: null };
     } catch (error) {
-      console.error("BeersService: Failed to find or create beer:", error);
+      console.error("ServerBeersService: Failed to find or create beer:", error);
       return { 
         data: null, 
         error: error instanceof Error ? error.message : "Unknown error" 
@@ -141,15 +132,7 @@ export class BeersService {
   }
 }
 
-// Convenience factory functions
-export function createBeersService(isServer: boolean = true) {
-  return new BeersService(isServer);
-}
-
+// Factory function
 export function createServerBeersService() {
-  return new BeersService(true);
-}
-
-export function createClientBeersService() {
-  return new BeersService(false);
+  return new ServerBeersService();
 } 

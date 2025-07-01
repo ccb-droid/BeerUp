@@ -10,6 +10,7 @@ export interface ReviewService {
   getUserReviewForBeer: (beerId: string, userId: string) => Promise<{ data: Tables<"reviews"> | null; error: any }>;
   getUserFullReviews: (userId: string) => Promise<{ data: FullReview[] | null; error: any }>;
   getOtherReviews: (beerId: string, userId: string | undefined, page: number, pageSize: number) => Promise<{ data: any[] | null; error: any }>;
+  getRecentReviews: (page: number, pageSize: number) => Promise<{ data: any[] | null; error: any }>;
 }
 
 export function createServerReviewService(): ReviewService {
@@ -20,20 +21,62 @@ export function createServerReviewService(): ReviewService {
   ): Promise<{ data: { id: string } | null; error: any }> {
     try {
       const supabase = await createClient(); // Create client per call
+      
+      // First verify authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error("Service - Auth error:", authError);
+        return { data: null, error: { message: "Authentication failed", details: authError } };
+      }
+      
+      if (!user) {
+        console.error("Service - No authenticated user found");
+        return { data: null, error: { message: "User not authenticated" } };
+      }
+      
+      // Ensure the review data has the correct user_id
+      const validatedReviewData = {
+        ...reviewData,
+        user_id: user.id // Override with authenticated user's ID for security
+      };
+      
+      console.log("Service - Attempting to insert review with data:", {
+        user_id: validatedReviewData.user_id,
+        beer_id: validatedReviewData.beer_id,
+        rating: validatedReviewData.rating
+      });
+      
       const { data, error } = await supabase
         .from("reviews")
-        .insert(reviewData)
+        .insert(validatedReviewData)
         .select("id")
         .single();
 
       if (error) {
         console.error("Service - Error inserting review:", error);
+        
+        // Provide more specific error messages for common RLS issues
+        if (error.code === '42501' || error.message?.includes('row-level security')) {
+          return { 
+            data: null, 
+            error: { 
+              message: "Permission denied. Please ensure you are logged in and try again.",
+              code: 'RLS_ERROR',
+              details: error 
+            }
+          };
+        }
+        
         return { data: null, error };
       }
+      
       if (!data) {
         console.error("Service - Review insertion succeeded but no ID was returned.");
         return { data: null, error: { message: "Review submitted but failed to get ID." } };
       }
+      
+      console.log("Service - Successfully inserted review with ID:", data.id);
       return { data, error: null };
     } catch (e: any) {
       console.error("Service - Unexpected error inserting review:", e);
@@ -146,7 +189,33 @@ export function createServerReviewService(): ReviewService {
     }
   }
 
-    
+  async function getRecentReviews(
+    page: number,
+    pageSize: number
+  ): Promise<{ data: any[] | null; error: any }> {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("reviews")
+        .select(`
+          *,
+          profiles:user_id (username),
+          beers:beer_id (id, name, brewery, style)
+        `)
+        .order("created_at", { ascending: false })
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (error) {
+        console.error("Service - Error fetching recent reviews:", error);
+        return { data: null, error };
+      }
+
+      return { data, error: null };
+    } catch (e: any) {
+      console.error("Service - Unexpected error fetching recent reviews:", e);
+      return { data: null, error: e };
+    }
+  }
   
   return {
     insertReview,
@@ -154,6 +223,7 @@ export function createServerReviewService(): ReviewService {
     getUserReviewForBeer,
     getUserFullReviews,
     getOtherReviews,
+    getRecentReviews,
   };
 }
 

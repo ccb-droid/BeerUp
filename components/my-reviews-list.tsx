@@ -1,4 +1,7 @@
 import { UserReviewCard } from "@/components/user-review-card";
+import { Button } from "@/components/ui/button";
+import { AddReviewDialog } from "@/components/add-review/add-review-dialog";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { FullReview } from "@/lib/types";
 
@@ -23,18 +26,30 @@ export function MyReviewsList({ reviews, fetchError }: MyReviewsListProps) {
     return (
       <div className="text-center py-10 border-2 border-dashed border-muted rounded-lg">
         <h3 className="text-xl font-semibold text-muted-foreground">No Reviews Yet</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          You haven't reviewed any beers yet. 
-          <Link href="/" className="text-primary hover:underline ml-1">
-            Explore beers and add your first review!
-          </Link>
+        <p className="mt-2 text-sm text-muted-foreground mb-4">
+          You haven't reviewed any beers yet. Start by adding your first review!
         </p>
+        <AddReviewDialog>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Your First Review
+          </Button>
+        </AddReviewDialog>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Your Reviews ({reviews.length})</h3>
+        <AddReviewDialog>
+          <Button variant="outline" size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Review
+          </Button>
+        </AddReviewDialog>
+      </div>
       {reviews.map((review) => (
         <UserReviewCard key={review.id} review={review} />
       ))}

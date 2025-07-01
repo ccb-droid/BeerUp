@@ -1,28 +1,12 @@
-// "use client"
-
-// import { Suspense } from "react"
-// import { ArrowLeft, Edit, Trash2 } from "lucide-react"
-// import { Button } from "@/components/ui/button"
-// import Image from "next/image"
-// import Link from "next/link"
-// import { CreateReviewDialog } from "@/components/review/create-review-dialog"
-// import { Badge } from "@/components/ui/badge"
-// import OtherReviews from "@/components/other-reviews"
 import { getCurrentSession } from "@/lib/auth/client"
 import { notFound } from "next/navigation"
-import ReviewDisplayClient from "./ReviewDisplayClient"
+import BeerDetailClient from "./BeerDetailClient"
 import { getUserReviewForBeerAction } from "@/lib/actions/reviewActions"
 import { getBeerById } from "@/lib/actions/beers"
-import { type Beer } from "@/lib/types"
-import { type UserReviewData, type BeerData } from "./ReviewDisplayClient"
-
-// Mock data for when the beer doesn't exist in the database
-// const mockBeerData: Record<string, Beer> = {
-// ... (mock data remains unchanged)
-// }
+import { type UserReviewData, type BeerData } from "./BeerDetailClient"
 
 // Page components in the app directory receive params as a prop
-export default async function ReviewPage({ params }: { params: { id: string } }) {
+export default async function BeerDetailPage({ params }: { params: { id: string } }) {
   // Check if user is authenticated
   const { data: { session } } = await getCurrentSession()
   const userId = session?.user?.id
@@ -37,8 +21,6 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   }
 
   // Adapt fetchedBeer to BeerData for the client component
-  // The Beer type from @/lib/types should be compatible with BeerData
-  // now that BeerData.style is string | null
   const beerDataForClient: BeerData = fetchedBeer;
 
   // Fetch the user's review for this beer
@@ -69,7 +51,7 @@ export default async function ReviewPage({ params }: { params: { id: string } })
   const isOwner = userReviewForClient?.user_id === userId
 
   return (
-    <ReviewDisplayClient
+    <BeerDetailClient
       beerData={beerDataForClient}
       userReview={userReviewForClient}
       hasUserReview={hasUserReview}
@@ -78,4 +60,4 @@ export default async function ReviewPage({ params }: { params: { id: string } })
       paramsId={beerIdFromParams}
     />
   )
-}
+} 

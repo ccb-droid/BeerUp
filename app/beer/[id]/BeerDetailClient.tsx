@@ -1,14 +1,15 @@
 "use client"
 
-import { Suspense, useState } from "react"
-import { ArrowLeft, Edit, Trash2, Star, Calendar, Beer } from "lucide-react"
+import { Suspense } from "react"
+import { Edit, Trash2, Star, Calendar, Beer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
-import { AddBeerDialog } from "@/components/add-beer/add-beer-dialog"
+import { AddReviewDialog } from "@/components/add-review/add-review-dialog"
 import { Badge } from "@/components/ui/badge"
 import OtherReviews from "@/components/other-reviews"
 import { Card, CardContent } from "@/components/ui/card"
+import NavigationBreadcrumb from "@/components/navigation-breadcrumb"
 
 export interface BeerData {
   id: string
@@ -31,7 +32,7 @@ export interface UserReviewData {
   typically_drinks: boolean
 }
 
-interface ReviewDisplayProps {
+interface BeerDetailProps {
   beerData: BeerData
   userReview: UserReviewData | null
   hasUserReview: boolean
@@ -40,14 +41,14 @@ interface ReviewDisplayProps {
   paramsId: string
 }
 
-export default function ReviewDisplayClient({
+export default function BeerDetailClient({
   beerData,
   userReview,
   hasUserReview,
   isOwner,
   userId,
   paramsId,
-}: ReviewDisplayProps) {
+}: BeerDetailProps) {
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -64,22 +65,18 @@ export default function ReviewDisplayClient({
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
       <div className="container max-w-6xl py-8 space-y-8">
+        {/* Navigation Breadcrumb */}
+        <NavigationBreadcrumb beerName={beerData.name} />
+        
         {/* Header Section */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" asChild className="hover:bg-amber-100">
-              <Link href="/">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{beerData.name}</h1>
-              <div className="flex items-center space-x-3 text-lg text-gray-600">
-                <Beer className="h-5 w-5 text-amber-600" />
-                <span className="font-semibold">{beerData.brewery}</span>
-                <span>•</span>
-                <span className="text-amber-700 font-medium">{beerData.style}</span>
-              </div>
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{beerData.name}</h1>
+            <div className="flex items-center space-x-3 text-lg text-gray-600">
+              <Beer className="h-5 w-5 text-amber-600" />
+              <span className="font-semibold">{beerData.brewery}</span>
+              <span>•</span>
+              <span className="text-amber-700 font-medium">{beerData.style}</span>
             </div>
           </div>
         </div>
@@ -90,9 +87,6 @@ export default function ReviewDisplayClient({
             <Card className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
               <CardContent className="p-0">
                 <div className="grid lg:grid-cols-5 gap-0">
-                  {/* Image Gallery Section */}
-                  {/* <div className="lg:col-span-3 p-6 space-y-4"> ... </div> */}
-
                   {/* Review Details Section */}
                   <div className="lg:col-span-5 p-6 bg-gradient-to-br from-gray-50 to-white space-y-6">
                     {/* Rating Section */}
@@ -170,14 +164,14 @@ export default function ReviewDisplayClient({
                     You haven't reviewed this beer yet. Be the first to share your thoughts!
                   </p>
                 </div>
-                <AddBeerDialog>
+                <AddReviewDialog>
                   <Button 
                     size="lg" 
                     className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     Add Your Review
                   </Button>
-                </AddBeerDialog>
+                </AddReviewDialog>
               </div>
             </CardContent>
           </Card>

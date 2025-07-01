@@ -7,7 +7,8 @@ export * from "./data/reviews";
 export * from "./data/profiles";
 
 // Service layer (business logic)
-export * from "./services/beers";
+export * from "./services/beers-client";
+export * from "./services/beers-server";
 
 // Server actions
 export * from "./actions/beers";
@@ -16,7 +17,8 @@ export * from "./actions/beers";
 export * from "./client/beers";
 
 // Supabase clients
-export { createClient } from "./supabase/server";
+// Note: Server createClient is not exported here to prevent client-side bundling
+// Import directly from "./supabase/server" in server components and API routes
 export { supabase } from "./supabase/client";
 
 // Auth utilities

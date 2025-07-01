@@ -1,4 +1,4 @@
-import { createClientBeersService } from "../services/beers";
+import { createClientBeersService } from "../services/beers-client";
 import type { Beer, NewBeer } from "../types";
 
 const beersService = createClientBeersService();

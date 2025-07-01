@@ -1,7 +1,7 @@
 "use client"; // Marking functions within as usable in client components if they are, or this file exports hooks
 
 import {
-  getReviewsAction,
+  getOtherReviewsAction,
   getUserReviewForBeerAction,
 } from "@/lib/actions/reviewActions"; // Or from "@/app/actions/reviewActions" if you prefer that abstraction
 import type { Tables } from "@/lib/database.types";
@@ -18,7 +18,7 @@ export async function fetchReviewsForBeer(beerId: string): Promise<{
 }> {
   try {
     // Directly calling the server action
-    const result = await getReviewsAction(beerId);
+    const result = await getOtherReviewsAction(beerId, undefined, 1, 10);
     return result;
   } catch (error) {
     console.error("Client - Error fetching reviews for beer:", error);

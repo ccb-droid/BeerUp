@@ -24,55 +24,10 @@ interface ReviewData {
   profiles: ReviewProfile | null; // Profile can be null
 }
 
-// Sample mock data with UUID-style IDs
-const mockOtherReviews: ReviewData[] = [
-  {
-    id: "d290f1ee-6c54-4b01-90e6-d701748f0861",
-    user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f35",
-    beer_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-    rating: 4.2,
-    review_text: "Solid IPA with good hop character. Not too bitter, which I appreciate.",
-    typically_drinks: true,
-    images: ["/placeholder.svg?height=80&width=80"],
-    created_at: "2023-05-10T14:30:00Z",
-    updated_at: "2023-05-10T14:30:00Z",
-    profiles: {
-      username: "beerLover42",
-    },
-  },
-  {
-    id: "d290f1ee-6c54-4b01-90e6-d701748f0862",
-    user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f36",
-    beer_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-    rating: 4.7,
-    review_text: "One of my favorite IPAs. The citrus notes really come through and the finish is clean.",
-    typically_drinks: true,
-    images: ["/placeholder.svg?height=80&width=80"],
-    created_at: "2023-04-22T09:15:00Z",
-    updated_at: "2023-04-22T09:15:00Z",
-    profiles: {
-      username: "craftBeerFan",
-    },
-  },
-  {
-    id: "d290f1ee-6c54-4b01-90e6-d701748f0863",
-    user_id: "e5e7b566-c92d-4baa-b94b-1c8759fc4f37",
-    beer_id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-    rating: 3.8,
-    review_text: "Good but not great. I prefer more bitterness in my IPAs.",
-    typically_drinks: false,
-    images: ["/placeholder.svg?height=80&width=80"],
-    created_at: "2023-03-15T18:45:00Z",
-    updated_at: "2023-03-15T18:45:00Z",
-    profiles: {
-      username: "hopHead",
-    },
-  },
-]
-
 export default function OtherReviews({ beerId, userId }: { beerId: string; userId?: string }) {
   const [reviews, setReviews] = useState<ReviewData[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const pageSize = 5
@@ -83,29 +38,19 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
 
   async function fetchReviews() {
     setLoading(true)
+    setError(null)
 
     try {
-      // Always use mock data for now to avoid runtime errors
-      // setReviews(mockOtherReviews);
-      // setHasMore(false);
-      // setLoading(false);
-      // return;
-
-      // The code below is commented out to prevent runtime errors
-      // Uncomment when your Supabase database is properly set up
+      const { data, error: fetchError } = await getOtherReviewsAction(beerId, userId, page, pageSize);
       
-      const { data, error } = await getOtherReviewsAction(beerId, userId, page, pageSize);
-      
-      if (error || !data) {
-        console.error('Error fetching reviews:', error);
-        // Use mock data if there's an error
-        if (page === 0) {
-          setReviews(mockOtherReviews);
-        }
+      if (fetchError) {
+        console.error('Error fetching other reviews:', fetchError);
+        setError(fetchError);
         setHasMore(false);
-      } else if (data.length === 0 && page === 0) {
-        // Use mock data if no reviews are found
-        setReviews(mockOtherReviews);
+      } else if (!data || data.length === 0) {
+        if (page === 0) {
+          setReviews([]);
+        }
         setHasMore(false);
       } else {
         if (data.length < pageSize) {
@@ -120,15 +65,12 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
       }
       
     } catch (e) {
-      console.error("Error in fetchReviews:", e)
-      // Fallback to mock data
-      if (page === 0) {
-        setReviews(mockOtherReviews)
-      }
-      setHasMore(false)
+      console.error("Unexpected error in fetchReviews:", e);
+      setError("An unexpected error occurred while loading reviews.");
+      setHasMore(false);
     }
 
-    setLoading(false)
+    setLoading(false);
   }
 
   const loadMore = () => {
@@ -143,6 +85,37 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
 
   if (loading && reviews.length === 0) {
     return <div>Loading reviews...</div>
+  }
+
+  if (error && reviews.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">Error loading reviews</p>
+        <p className="text-muted-foreground text-sm mt-1">{error}</p>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => {
+            setPage(0);
+            fetchReviews();
+          }}
+          className="mt-3"
+        >
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (reviews.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">No other reviews for this beer yet.</p>
+        <p className="text-muted-foreground text-sm mt-1">
+          Be the first to share your thoughts!
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -175,11 +148,26 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
         </div>
       ))}
 
-      {hasMore && (
+      {error && reviews.length > 0 && (
+        <div className="text-center pt-2">
+          <p className="text-destructive text-sm mb-2">Failed to load more reviews: {error}</p>
+          <Button variant="outline" size="sm" onClick={() => fetchReviews()} disabled={loading}>
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {hasMore && !error && (
         <div className="text-center pt-2">
           <Button variant="outline" onClick={loadMore} disabled={loading}>
             {loading ? "Loading..." : "Load More Reviews"}
           </Button>
+        </div>
+      )}
+
+      {!hasMore && !error && reviews.length > 0 && (
+        <div className="text-center pt-2">
+          <p className="text-muted-foreground text-sm">No more reviews to load</p>
         </div>
       )}
     </div>
