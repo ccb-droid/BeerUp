@@ -30,7 +30,7 @@ export function MyReviewsList({ reviews, fetchError }: MyReviewsListProps) {
           You haven't reviewed any beers yet. Start by adding your first review!
         </p>
         <AddReviewDialog>
-          <Button>
+          <Button size="lg">
             <Plus className="h-4 w-4 mr-2" />
             Add Your First Review
           </Button>
@@ -44,7 +44,7 @@ export function MyReviewsList({ reviews, fetchError }: MyReviewsListProps) {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Your Reviews ({reviews.length})</h3>
         <AddReviewDialog>
-          <Button variant="outline" size="sm">
+          <Button size="lg" className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Add Review
           </Button>

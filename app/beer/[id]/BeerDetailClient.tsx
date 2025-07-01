@@ -63,138 +63,127 @@ export default function BeerDetailClient({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
-      <div className="container max-w-6xl py-8 space-y-8">
-        {/* Navigation Breadcrumb */}
-        <NavigationBreadcrumb beerName={beerData.name} />
-        
-        {/* Header Section */}
-        <div className="space-y-4">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">{beerData.name}</h1>
-            <div className="flex items-center space-x-3 text-lg text-gray-600">
-              <Beer className="h-5 w-5 text-amber-600" />
-              <span className="font-semibold">{beerData.brewery}</span>
-              <span>•</span>
-              <span className="text-amber-700 font-medium">{beerData.style}</span>
-            </div>
-          </div>
+    <div className="space-y-6 sm:space-y-8">
+      {/* Navigation Breadcrumb */}
+      <NavigationBreadcrumb beerName={beerData.name} />
+      
+      {/* Header Section */}
+      <div className="flex flex-col items-start gap-4">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{beerData.name}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            <span className="font-semibold">{beerData.brewery}</span>
+            {beerData.style && (
+              <>
+                <span className="mx-2">•</span>
+                <span>{beerData.style}</span>
+              </>
+            )}
+          </p>
         </div>
+      </div>
 
-        {hasUserReview && userReview ? (
-          <div className="space-y-8">
-            {/* Main Review Card */}
-            <Card className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-0">
-                <div className="grid lg:grid-cols-5 gap-0">
-                  {/* Review Details Section */}
-                  <div className="lg:col-span-5 p-6 bg-gradient-to-br from-gray-50 to-white space-y-6">
-                    {/* Rating Section */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-gray-900">My Review</h2>
-                        {isOwner && (
-                          <div className="flex space-x-2">
-                            <Button variant="outline" size="sm" className="flex items-center hover:bg-amber-50" asChild>
-                              <Link href={`/reviews/edit/${userReview.id}`}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" className="flex items-center text-red-600 hover:bg-red-50 hover:text-red-700">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center space-x-1">
-                          {renderStars(userReview.rating)}
-                        </div>
-                        <span className="text-2xl font-bold text-amber-600">
-                          {userReview.rating}/5
-                        </span>
-                      </div>
-                      
-                      {userReview.typically_drinks && (
-                        <Badge 
-                          variant="outline" 
-                          className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-                        >
-                          ✓ I typically drink this style
-                        </Badge>
-                      )}
+      {hasUserReview && userReview ? (
+        <div className="space-y-6">
+          {/* Main Review Card */}
+          <Card>
+            <CardContent className="p-6 space-y-6">
+              {/* Rating Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">My Review</h2>
+                  {isOwner && (
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/reviews/edit/${userReview.id}`}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Link>
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-red-600 hover:bg-red-50 hover:text-red-700">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
                     </div>
-
-                    {/* Review Text */}
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-gray-800 text-lg">Review</h3>
-                      <p className="text-gray-700 leading-relaxed text-base bg-white/50 rounded-lg p-4 border border-gray-100">
-                        "{userReview.review_text}"
-                      </p>
-                    </div>
-
-                    {/* Date */}
-                    <div className="flex items-center space-x-2 text-sm text-gray-500 pt-4 border-t border-gray-200">
-                      <Calendar className="h-4 w-4" />
-                      <span>Reviewed on {new Date(userReview.created_at).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}</span>
-                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1">
+                    {renderStars(userReview.rating)}
                   </div>
+                  <span className="text-2xl font-bold text-amber-600">
+                    {userReview.rating}/5
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          /* No Review State */
-          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-            <CardContent className="text-center py-16">
-              <div className="space-y-6">
-                <div className="mx-auto w-24 h-24 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center">
-                  <Beer className="h-12 w-12 text-amber-500" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-bold text-gray-900">Share Your Experience</h3>
-                  <p className="text-gray-600 text-lg max-w-md mx-auto">
-                    You haven't reviewed this beer yet. Be the first to share your thoughts!
-                  </p>
-                </div>
-                <AddReviewDialog>
-                  <Button 
-                    size="lg" 
-                    className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    Add Your Review
-                  </Button>
-                </AddReviewDialog>
+                
+                {userReview.typically_drinks && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    ✓ I typically drink this style
+                  </Badge>
+                )}
+              </div>
+
+              {/* Review Text */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg">Review</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  "{userReview.review_text}"
+                </p>
+              </div>
+
+              {/* Date */}
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground pt-4 border-t">
+                <Calendar className="h-4 w-4" />
+                <span>Reviewed on {new Date(userReview.created_at).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</span>
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* Other Reviews Section */}
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardContent className="p-8">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-1 h-8 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
-              <h2 className="text-2xl font-bold text-gray-900">Community Reviews</h2>
-            </div>
-            <Suspense fallback={
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
-                <span className="ml-3 text-gray-600">Loading other reviews...</span>
+        </div>
+      ) : (
+        /* No Review State */
+        <Card>
+          <CardContent className="text-center py-16">
+            <div className="space-y-6">
+              <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
+                <Beer className="h-12 w-12 text-muted-foreground" />
               </div>
-            }>
-              <OtherReviews beerId={paramsId} userId={userId} />
-            </Suspense>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold">Share Your Experience</h3>
+                <p className="text-muted-foreground text-lg max-w-md mx-auto">
+                  You haven't reviewed this beer yet. Be the first to share your thoughts!
+                </p>
+              </div>
+              <AddReviewDialog>
+                <Button size="lg">
+                  Add Your Review
+                </Button>
+              </AddReviewDialog>
+            </div>
           </CardContent>
         </Card>
-      </div>
+      )}
+
+      {/* Other Reviews Section */}
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="text-2xl font-bold mb-6">Community Reviews</h2>
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center space-y-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="text-muted-foreground">Loading community reviews...</p>
+              </div>
+            </div>
+          }>
+            <OtherReviews beerId={paramsId} userId={userId} />
+          </Suspense>
+        </CardContent>
+      </Card>
     </div>
   )
 } 

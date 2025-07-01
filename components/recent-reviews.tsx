@@ -92,7 +92,14 @@ export default function RecentReviews() {
   }, [page])
 
   if (loading && reviews.length === 0) {
-    return <div className="text-center py-10">Loading recent reviews...</div>
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center space-y-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Loading recent reviews...</p>
+        </div>
+      </div>
+    )
   }
 
   if (error && reviews.length === 0) {
@@ -128,7 +135,7 @@ export default function RecentReviews() {
   return (
     <div className="space-y-6">
       {reviews.map((review) => (
-        <Card key={review.id} className="overflow-hidden">
+        <Card key={review.id}>
           <CardContent className="p-0">
             <div className="flex flex-col md:flex-row">
               {review.images && review.images.length > 0 && (
