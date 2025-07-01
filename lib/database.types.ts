@@ -15,7 +15,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
-          images: string[] | null
+          image_url: string | null
           name: string
           style: string | null
         }
@@ -24,7 +24,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
-          images?: string[] | null
+          image_url?: string | null
           name: string
           style?: string | null
         }
@@ -33,7 +33,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
-          images?: string[] | null
+          image_url?: string | null
           name?: string
           style?: string | null
         }
@@ -71,6 +71,7 @@ export type Database = {
           beer_id: string
           created_at: string
           id: string
+          image_url: string | null
           rating: number
           review_text: string | null
           typically_drinks: boolean
@@ -81,6 +82,7 @@ export type Database = {
           beer_id: string
           created_at?: string
           id?: string
+          image_url?: string | null
           rating: number
           review_text?: string | null
           typically_drinks?: boolean
@@ -91,6 +93,7 @@ export type Database = {
           beer_id?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           rating?: number
           review_text?: string | null
           typically_drinks?: boolean
@@ -119,7 +122,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_info: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          auth_user_id: string
+          auth_role: string
+          profile_exists: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

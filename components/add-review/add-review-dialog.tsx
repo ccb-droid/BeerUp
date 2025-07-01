@@ -105,6 +105,12 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
       showToast("Brewery is required.", "error")
       return false
     }
+
+    // If it's a new beer (not selected from existing), image is required
+    if (!selectedBeer && !imageFile) {
+      showToast("For new beers, an image is required.", "error")
+      return false
+    }
     
     if (rating < 1 || rating > 5) {
       showToast("Please select a rating from 1 to 5 stars.", "error")
@@ -136,17 +142,16 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
 
     try {
       let beerId: string
+      let beerImageUrl: string | null = null
 
       if (selectedBeer) {
         // User selected an existing beer
         beerId = selectedBeer.id
       } else {
         // User typed a new beer name, need to create the beer
-        let imageUrls: string[] = []
-
-        // Upload image if provided
+        // For new beers, image is required and goes to both beer and review
         if (imageFile) {
-          const fileName = `${user.id}/${Date.now()}-${imageFile.name}`
+          const fileName = `beers/${user.id}/${Date.now()}-${imageFile.name}`
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from("beer-images")
             .upload(fileName, imageFile)
@@ -161,9 +166,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
             .from("beer-images")
             .getPublicUrl(uploadData.path)
           
-          if (publicUrlData.publicUrl) {
-            imageUrls.push(publicUrlData.publicUrl)
-          }
+          beerImageUrl = publicUrlData.publicUrl
         }
 
         // Create or find the beer
@@ -171,7 +174,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
           beerName.trim(),
           brewery.trim(),
           style.trim(),
-          imageUrls
+          beerImageUrl || undefined
         )
 
         if (!newBeer?.id) {
@@ -186,6 +189,32 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
       formData.append("beerId", beerId)
       formData.append("rating", rating.toString())
       formData.append("reviewText", reviewText.trim())
+
+      // Handle review image upload
+      if (imageFile) {
+        if (selectedBeer) {
+          // For existing beers, upload image for review only
+          formData.append("imageFile", imageFile)
+        } else {
+          // For new beers, the same image goes to both beer and review
+          // Upload a separate copy for the review
+          const reviewFileName = `reviews/${user.id}/${Date.now()}-review-${imageFile.name}`
+          const { data: reviewUploadData, error: reviewUploadError } = await supabase.storage
+            .from("beer-images")
+            .upload(reviewFileName, imageFile)
+
+          if (!reviewUploadError) {
+            const { data: reviewPublicUrlData } = supabase.storage
+              .from("beer-images")
+              .getPublicUrl(reviewUploadData.path)
+            
+            // Create a new File object for the review image
+            const reviewImageBlob = new Blob([await imageFile.arrayBuffer()], { type: imageFile.type })
+            const reviewImageFile = new File([reviewImageBlob], imageFile.name, { type: imageFile.type })
+            formData.append("imageFile", reviewImageFile)
+          }
+        }
+      }
 
       const result = await addReview(formData)
 
@@ -290,14 +319,24 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
                 </div>
                 
                 <div>
-                  <Label htmlFor="image">Beer Image</Label>
+                  <Label htmlFor="image">
+                    {selectedBeer ? "Review Image (Optional)" : "Beer Image"} 
+                    {!selectedBeer && <span className="text-red-500"> *</span>}
+                  </Label>
                   <Input 
                     id="image" 
                     type="file" 
                     onChange={handleFileChange} 
                     accept="image/*"
                     disabled={isLoading}
+                    required={!selectedBeer}
                   />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {selectedBeer 
+                      ? "Upload an image specific to your review (optional)"
+                      : "Required for new beers - will be used as the main beer image"
+                    }
+                  </p>
                 </div>
               </div>
 

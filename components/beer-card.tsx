@@ -12,10 +12,8 @@ interface BeerCardProps {
 }
 
 export function BeerCard({ beer, userRating }: BeerCardProps) {
-  // Use the first image if available, otherwise use placeholder
-  const imageUrl = beer.images && beer.images.length > 0 
-    ? beer.images[0]
-    : "/placeholder.svg?height=200&width=200"
+  // Use the beer image if available, otherwise use placeholder
+  const imageUrl = beer.image_url || "/placeholder.svg?height=200&width=200"
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group animate-fade-in">

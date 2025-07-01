@@ -103,7 +103,7 @@ export class ServerBeersService {
     }
   }
 
-  async findOrCreateBeer(name: string, brewery: string, style: string, uploadedImageUrls: string[]): Promise<ApiResponse<Beer>> {
+  async findOrCreateBeer(name: string, brewery: string, style: string, imageUrl?: string): Promise<ApiResponse<Beer>> {
     try {
       const repo = await this.getRepository();
       
@@ -118,7 +118,7 @@ export class ServerBeersService {
         name: name.trim(),
         brewery: brewery.trim(),
         style: style.trim(),
-        images: uploadedImageUrls,
+        image_url: imageUrl || null,
       });
 
       return { data: newBeer, error: null };

@@ -35,6 +35,7 @@ export async function addReview(
     const beerId = formData.get("beerId") as string;
     const ratingString = formData.get("rating") as string;
     const reviewText = formData.get("reviewText") as string | null;
+    const imageFile = formData.get("imageFile") as File | null;
 
     if (!beerId || !ratingString) {
       return { success: false, error: "Missing beer ID or rating." };
@@ -48,11 +49,32 @@ export async function addReview(
       };
     }
 
+    // Handle image upload if provided
+    let imageUrl: string | null = null;
+    if (imageFile && imageFile.size > 0) {
+      const fileName = `reviews/${user.id}/${Date.now()}-${imageFile.name}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("beer-images")
+        .upload(fileName, imageFile);
+
+      if (uploadError) {
+        console.error("Action - Image upload failed:", uploadError);
+        return { success: false, error: `Image upload failed: ${uploadError.message}` };
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("beer-images")
+        .getPublicUrl(uploadData.path);
+      
+      imageUrl = publicUrlData.publicUrl;
+    }
+
     const reviewData: TablesInsert<"reviews"> = {
       beer_id: beerId,
       user_id: user.id,
       rating: rating,
       review_text: reviewText || null,
+      image_url: imageUrl,
       // typically_drinks can be omitted to use database default or set explicitly
       // typically_drinks: false,
     };

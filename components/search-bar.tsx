@@ -175,7 +175,7 @@ export default function SearchBar() {
                     <CardContent className="p-3 flex items-center space-x-3">
                       <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                         <Image
-                          src={beer.images?.[0] || "/placeholder.svg?height=48&width=48"}
+                          src={beer.image_url || "/placeholder.svg?height=48&width=48"}
                           alt={beer.name}
                           fill
                           className="object-cover"

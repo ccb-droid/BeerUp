@@ -1,6 +1,8 @@
 // Re-export database types for easier importing
 import type { Database } from "../database.types";
 
+export type { Database };
+
 // Specific table types
 export type Beer = Database["public"]["Tables"]["beers"]["Row"];
 export type NewBeer = Database["public"]["Tables"]["beers"]["Insert"];

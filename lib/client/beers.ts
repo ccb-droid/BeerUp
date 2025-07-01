@@ -64,13 +64,13 @@ export async function findOrCreateBeerClient(
   name: string, 
   brewery: string, 
   style: string,
-  uploadedImageUrls: string[]
+  imageUrl?: string
 ): Promise<Beer | null> {
   if (!name?.trim() || !brewery?.trim()) {
     return null;
   }
 
-  const result = await beersService.findOrCreateBeer(name, brewery, style || "", uploadedImageUrls);
+  const result = await beersService.findOrCreateBeer(name, brewery, style || "", imageUrl);
   
   if (result.error) {
     console.error("Client - findOrCreateBeerClient:", result.error);

@@ -99,7 +99,7 @@ export class ClientBeersService {
     }
   }
 
-  async findOrCreateBeer(name: string, brewery: string, style: string, uploadedImageUrls: string[]): Promise<ApiResponse<Beer>> {
+  async findOrCreateBeer(name: string, brewery: string, style: string, imageUrl?: string): Promise<ApiResponse<Beer>> {
     try {
       // Try to find existing beer first
       const existing = await this.repository.findExisting(name.trim(), brewery.trim(), style.trim());
@@ -112,7 +112,7 @@ export class ClientBeersService {
         name: name.trim(),
         brewery: brewery.trim(),
         style: style.trim(),
-        images: uploadedImageUrls,
+        image_url: imageUrl || null,
       });
 
       return { data: newBeer, error: null };
