@@ -163,7 +163,8 @@ export function createServerReviewService(): ReviewService {
         .from("reviews")
         .select(`
           *,
-          profiles:user_id (username)
+          profiles:user_id (username),
+          beers:beer_id (image_url)
         `)
         .eq("beer_id", beerId);
 
@@ -200,7 +201,7 @@ export function createServerReviewService(): ReviewService {
         .select(`
           *,
           profiles:user_id (username),
-          beers:beer_id (id, name, brewery, style)
+          beers:beer_id (id, name, brewery, style, image_url)
         `)
         .order("created_at", { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1);

@@ -11,6 +11,10 @@ interface ReviewProfile {
   username: string;
 }
 
+interface ReviewBeer {
+  image_url?: string | null;
+}
+
 interface ReviewData {
   id: string;
   user_id: string;
@@ -18,10 +22,11 @@ interface ReviewData {
   rating: number;
   review_text: string;
   typically_drinks: boolean;
-  images: string[];
+  image_url?: string | null;
   created_at: string;
   updated_at: string;
   profiles: ReviewProfile | null; // Profile can be null
+  beers: ReviewBeer | null;
 }
 
 export default function OtherReviews({ beerId, userId }: { beerId: string; userId?: string }) {
@@ -136,13 +141,16 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
           </div>
           <p className="text-base">{review.review_text}</p>
 
-          {review.images && review.images.length > 0 && (
+          {(review.image_url || review.beers?.image_url) && (
             <div className="flex mt-3 space-x-2">
-              {review.images.slice(0, 3).map((image, index) => (
-                <div key={index} className="relative h-16 w-16 rounded-md overflow-hidden">
-                  <Image src={image || "/placeholder.svg"} alt="Beer" fill className="object-cover" />
-                </div>
-              ))}
+              <div className="relative h-16 w-16 rounded-md overflow-hidden">
+                <Image 
+                  src={review.image_url || review.beers?.image_url || "/placeholder.svg"} 
+                  alt="Beer" 
+                  fill 
+                  className="object-cover" 
+                />
+              </div>
             </div>
           )}
         </div>

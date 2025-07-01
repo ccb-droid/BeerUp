@@ -17,6 +17,7 @@ interface ReviewBeer {
   name: string;
   brewery: string;
   style: string;
+  image_url?: string | null;
 }
 
 interface ReviewData {
@@ -26,7 +27,7 @@ interface ReviewData {
   rating: number;
   review_text: string;
   typically_drinks: boolean;
-  images?: string[];
+  image_url?: string | null;
   created_at: string;
   updated_at: string;
   profiles: ReviewProfile | null;
@@ -138,10 +139,10 @@ export default function RecentReviews() {
         <Card key={review.id}>
           <CardContent className="p-0">
             <div className="flex flex-col md:flex-row">
-              {review.images && review.images.length > 0 && (
+              {(review.image_url || review.beers?.image_url) && (
                 <div className="relative h-48 md:h-auto md:w-1/3">
                   <Image
-                    src={review.images[0] || "/placeholder.svg?height=200&width=300"}
+                    src={review.image_url || review.beers?.image_url || "/placeholder.svg?height=200&width=300"}
                     alt={review.beers?.name || "Beer"}
                     fill
                     className="object-cover"
