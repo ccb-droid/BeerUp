@@ -30,19 +30,51 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = createClient()
-    const { error } = await (await supabase).auth.exchangeCodeForSession(code)
+    const { error, data } = await (await supabase).auth.exchangeCodeForSession(code)
 
     if (error) {
-      console.error("Error exchanging code for session:", error)
+      console.error("[Auth Callback] Error exchanging code for session:", error)
       return NextResponse.redirect(`${requestUrl.origin}/login?error=invalid_code`)
     }
     console.log("[Auth Callback] Successfully exchanged code for session")
+    
+    // If we have a successful session exchange, check if this is a password recovery
+    // by checking the user's metadata or the session context
+    if (data?.session) {
+      console.log("[Auth Callback] Session data:", data.session)
+    }
   }
 
   // Check if this is a password recovery flow based on type parameter
   if (type === "recovery") {
     console.log("[Auth Callback] Detected password recovery, redirecting to reset password page")
     return NextResponse.redirect(`${requestUrl.origin}/reset-password`)
+  }
+
+  // Also check for password recovery by looking at the referer or other indicators
+  const referer = request.headers.get("referer")
+  if (referer && referer.includes("recovery")) {
+    console.log("[Auth Callback] Detected password recovery from referer, redirecting to reset password page")
+    return NextResponse.redirect(`${requestUrl.origin}/reset-password`)
+  }
+
+  // If we have a code but no explicit type, check if this might be a password recovery
+  if (code && !type) {
+    // In some cases, the type parameter might be missing but this is still a recovery flow
+    // We can detect this by checking if the user was just created vs existing user
+    const supabase = createClient()
+    const { data: user } = await (await supabase).auth.getUser()
+    
+    if (user?.user) {
+      console.log("[Auth Callback] User found, checking if this might be a recovery flow")
+      // If user exists and we just exchanged a code, this could be password recovery
+      // Let's be safe and check the URL pattern or other indicators
+      const urlString = requestUrl.toString()
+      if (urlString.includes("verify") || urlString.includes("recovery")) {
+        console.log("[Auth Callback] URL suggests recovery flow, redirecting to reset password")
+        return NextResponse.redirect(`${requestUrl.origin}/reset-password`)
+      }
+    }
   }
 
   // Default redirect to homepage for other auth flows (signup confirmation, etc.)

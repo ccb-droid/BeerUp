@@ -20,6 +20,8 @@ export function ForgotPasswordForm() {
     const error = searchParams.get("error")
     if (error === "expired") {
       setUrlError("Your password reset link is invalid or has been used. This can happen if your email provider scanned the link for security. Please request a new reset link.")
+    } else if (error === "no_session") {
+      setUrlError("Your password reset session has expired. Please request a new reset link.")
     }
   }, [searchParams])
 

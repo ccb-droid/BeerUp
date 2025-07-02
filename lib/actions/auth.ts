@@ -107,10 +107,16 @@ export async function forgotPassword(formData: FormData) {
     }
   }
 
-  console.log("[Auth] Using base URL for password reset:", baseUrl)
+  // Ensure baseUrl doesn't have trailing slash
+  baseUrl = baseUrl.replace(/\/$/, '')
+  
+  // Construct the full redirect URL for password reset
+  const redirectUrl = `${baseUrl}/callback?type=recovery`
+  
+  console.log("[Auth] Using redirect URL for password reset:", redirectUrl)
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${baseUrl}/callback?type=recovery`,
+    redirectTo: redirectUrl,
   })
 
   if (error) {
