@@ -51,7 +51,7 @@ export default function Header() {
         <div className="flex items-center justify-between mb-3">
           <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
             <Beer className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500" />
-            <span className="font-bold text-lg sm:text-xl">BeerUp</span>
+            <span className="font-bold text-lg sm:text-xl">Malty</span>
           </Link>
 
           <nav>
@@ -92,6 +92,21 @@ export default function Header() {
             {/* Main Navigation */}
             <nav className="flex items-center space-x-1">
               <Button
+                variant={pathname === "/my-reviews" ? "default" : "ghost"}
+                size="sm"
+                asChild
+                className={cn(
+                  "text-sm font-medium",
+                  pathname === "/my-reviews" && "bg-primary text-primary-foreground"
+                )}
+              >
+                <Link href="/my-reviews" className="flex items-center space-x-2">
+                  <Heart className="h-4 w-4" />
+                  <span>My Reviews</span>
+                </Link>
+              </Button>
+              
+              <Button
                 variant={pathname === "/" ? "default" : "ghost"}
                 size="sm"
                 asChild
@@ -101,21 +116,6 @@ export default function Header() {
                 )}
               >
                 <Link href="/" className="flex items-center space-x-2">
-                  <Heart className="h-4 w-4" />
-                  <span>My Reviews</span>
-                </Link>
-              </Button>
-              
-              <Button
-                variant={pathname === "/recent" ? "default" : "ghost"}
-                size="sm"
-                asChild
-                className={cn(
-                  "text-sm font-medium",
-                  pathname === "/recent" && "bg-primary text-primary-foreground"
-                )}
-              >
-                <Link href="/recent" className="flex items-center space-x-2">
                   <Clock className="h-4 w-4" />
                   <span>Recent Reviews</span>
                 </Link>

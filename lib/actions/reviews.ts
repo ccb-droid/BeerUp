@@ -398,7 +398,7 @@ export async function addReviewValidated(reviewData: ReviewInput): Promise<Table
   }
 
   revalidatePath(`/beer/${validated.beer_id}`);
-  revalidatePath("/recent");
+  revalidatePath("/");
 
   return data;
 }
@@ -433,7 +433,7 @@ export async function updateReview(reviewData: UpdateReviewInput): Promise<Table
   }
 
   revalidatePath(`/beer/${data.beer_id}`);
-  revalidatePath("/recent");
+  revalidatePath("/");
 
   return data;
 }
@@ -460,5 +460,5 @@ export async function deleteReview(id: string): Promise<void> {
     throw new Error(error.message);
   }
 
-  revalidatePath("/recent");
+  revalidatePath("/");
 }

@@ -40,10 +40,10 @@ export default function NavigationBreadcrumb({
     const items = []
 
     // Always start with home
-    items.push({ href: "/", label: "My Reviews", icon: Home })
+    items.push({ href: "/", label: "Recent Reviews", icon: Home })
 
-    if (pathname === "/recent") {
-      items.push({ href: "/recent", label: "Recent Reviews", icon: Clock })
+    if (pathname === "/my-reviews") {
+      items.push({ href: "/my-reviews", label: "My Reviews", icon: Clock })
     } else if (pathname.startsWith("/beer/")) {
       if (beerName) {
         items.push({ href: pathname, label: beerName, icon: Beer })

@@ -34,7 +34,7 @@ export function LoginForm() {
           <div className="flex justify-center mb-2">
             <Beer className="h-12 w-12 text-amber-500" />
           </div>
-          <CardTitle className="text-2xl text-center">Welcome to BeerUp</CardTitle>
+          <CardTitle className="text-2xl text-center">Welcome to Malty</CardTitle>
           <CardDescription className="text-center">Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent>

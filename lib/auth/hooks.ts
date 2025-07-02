@@ -82,7 +82,7 @@ export const handleRegisterSubmit = async (
     }
 
     if (user) {
-      showToast("Account created successfully! Welcome to BeerUp!", "success");
+      showToast("Account created successfully! Welcome to Malty!", "success");
       router.push("/");
       router.refresh();
     }

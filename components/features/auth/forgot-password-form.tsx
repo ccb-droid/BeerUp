@@ -69,7 +69,7 @@ export function ForgotPasswordForm() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="me@example.com"
                 required
                 disabled={isLoading}
               />

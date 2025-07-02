@@ -11,7 +11,7 @@ import { QueryProvider } from "@/components/layout/query-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "BeerUp - Beer Review App",
+  title: "Malty - Beer Review App",
   description: "Review and discover great beers",
   generator: 'v0.dev'
 }
