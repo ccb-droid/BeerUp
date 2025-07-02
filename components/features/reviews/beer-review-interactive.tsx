@@ -100,7 +100,7 @@ export function BeerReviewInteractive({
             fill="currentColor" 
           />
         ))}
-        <Link href="/auth/login" className="ml-2 hover:underline text-primary">
+        <Link href="/login" className="ml-2 hover:underline text-primary">
           Sign in to rate
         </Link>
       </div>

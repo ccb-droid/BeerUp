@@ -12,7 +12,11 @@ import { cn } from "@/lib/utils"
 
 export default function Header() {
   const pathname = usePathname()
-  const isAuthPage = pathname.startsWith("/auth")
+  const isAuthPage = pathname.startsWith("/login") || 
+                     pathname.startsWith("/register") || 
+                     pathname.startsWith("/forgot-password") || 
+                     pathname.startsWith("/reset-password") ||
+                     pathname.startsWith("/callback")
   const { user, signOut } = useAuth()
   const { showToast } = useToast()
   const router = useRouter()
@@ -74,7 +78,7 @@ export default function Header() {
               </DropdownMenu>
             ) : (
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/auth/login" className="text-sm sm:text-base">
+                <Link href="/login" className="text-sm sm:text-base">
                   Sign In
                 </Link>
               </Button>

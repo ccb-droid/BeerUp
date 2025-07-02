@@ -108,7 +108,7 @@ export default function AccountPage() {
         <div className="text-center py-10">
           <p className="text-muted-foreground mb-4">You need to be logged in to view this page.</p>
           <Button asChild>
-            <Link href="/auth/login?redirectTo=/account">Sign In</Link>
+            <Link href="/login?redirectTo=/account">Sign In</Link>
           </Button>
         </div>
       </div>

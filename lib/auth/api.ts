@@ -17,7 +17,7 @@ export const signUpUser = async (
       },
       emailRedirectTo: `${
         typeof window !== "undefined" ? window.location.origin : ""
-      }/auth/callback`,
+      }/callback`,
     },
   });
   return { data, error };
@@ -35,7 +35,7 @@ export const resetUserPassword = async (email: string) => {
   return await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${
       typeof window !== "undefined" ? window.location.origin : ""
-    }/auth/reset-password`,
+    }/reset-password`,
   });
 };
 
