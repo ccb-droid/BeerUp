@@ -92,12 +92,14 @@ export default function Header() {
             {/* Main Navigation */}
             <nav className="flex items-center space-x-1">
               <Button
-                variant={pathname === "/my-reviews" ? "default" : "ghost"}
+                variant="ghost"
                 size="sm"
                 asChild
                 className={cn(
-                  "text-sm font-medium",
-                  pathname === "/my-reviews" && "bg-primary text-primary-foreground"
+                  "text-sm font-medium relative border-b-2 rounded-b-none transition-colors",
+                  pathname === "/my-reviews" 
+                    ? "border-primary text-primary" 
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Link href="/my-reviews" className="flex items-center space-x-2">
@@ -107,12 +109,14 @@ export default function Header() {
               </Button>
               
               <Button
-                variant={pathname === "/" ? "default" : "ghost"}
+                variant="ghost"
                 size="sm"
                 asChild
                 className={cn(
-                  "text-sm font-medium",
-                  pathname === "/" && "bg-primary text-primary-foreground"
+                  "text-sm font-medium relative border-b-2 rounded-b-none transition-colors",
+                  pathname === "/" 
+                    ? "border-primary text-primary" 
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Link href="/" className="flex items-center space-x-2">

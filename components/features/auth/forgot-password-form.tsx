@@ -1,20 +1,21 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Beer } from "lucide-react"
-import { useForgotPassword } from "@/lib/hooks/use-auth"
+import { toast } from "sonner"
 
 export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [urlError, setUrlError] = useState<string | null>(null)
+  const [countdown, setCountdown] = useState<number | null>(null)
   const searchParams = useSearchParams()
-  const forgotPasswordMutation = useForgotPassword()
+  const router = useRouter()
 
   useEffect(() => {
     const error = searchParams.get("error")
@@ -25,15 +26,59 @@ export function ForgotPasswordForm() {
     }
   }, [searchParams])
 
+  // Countdown effect
+  useEffect(() => {
+    if (countdown === null) return
+
+    if (countdown === 0) {
+      router.push("/login")
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown(countdown - 1)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [countdown, router])
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
     setUrlError(null) // Clear any previous URL error
     
     const formData = new FormData(e.currentTarget)
-    await forgotPasswordMutation.mutateAsync(formData)
     
-    setIsLoading(false)
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        body: formData,
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || "Failed to send reset email")
+      }
+
+      const result = await response.json()
+      
+      // Show success toast with countdown
+      toast.success("Password reset email sent!", {
+        description: `Check your email for the reset link. Redirecting to login in 3 seconds...`,
+        duration: Infinity, // Keep toast visible during countdown
+      })
+
+      // Start countdown
+      setCountdown(3)
+      
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to send reset email. Please try again."
+      toast.error("Error", {
+        description: message,
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -50,15 +95,22 @@ export function ForgotPasswordForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {(forgotPasswordMutation.error || urlError) && (
+            {urlError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>
-                  {urlError || 
-                   (forgotPasswordMutation.error instanceof Error 
-                    ? forgotPasswordMutation.error.message 
-                    : "An error occurred sending the reset email")}
+                  {urlError}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {countdown !== null && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Success!</AlertTitle>
+                <AlertDescription>
+                  Password reset email sent! Redirecting to login in {countdown} second{countdown !== 1 ? 's' : ''}...
                 </AlertDescription>
               </Alert>
             )}
@@ -71,12 +123,12 @@ export function ForgotPasswordForm() {
                 type="email"
                 placeholder="me@example.com"
                 required
-                disabled={isLoading}
+                disabled={isLoading || countdown !== null}
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading || forgotPasswordMutation.isPending}>
-              {isLoading || forgotPasswordMutation.isPending ? "Sending..." : "Send Reset Email"}
+            <Button type="submit" className="w-full" disabled={isLoading || countdown !== null}>
+              {isLoading ? "Sending..." : countdown !== null ? `Redirecting in ${countdown}...` : "Send Reset Email"}
             </Button>
           </form>
         </CardContent>

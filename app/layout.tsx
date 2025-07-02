@@ -7,6 +7,7 @@ import Header from "@/components/layout/header"
 import { AuthProvider } from "@/lib/auth/context"
 import { ToastProvider } from "@/components/layout/toast-provider"
 import { QueryProvider } from "@/components/layout/query-provider"
+import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,6 +37,7 @@ export default function RootLayout({
                     </div>
                   </main>
                 </div>
+                <Toaster />
               </ToastProvider>
             </AuthProvider>
           </QueryProvider>
