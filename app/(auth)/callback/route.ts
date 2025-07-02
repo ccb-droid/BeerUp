@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
     if (error) {
       console.error("Error exchanging code for session:", error)
-      return NextResponse.redirect(`${requestUrl.origin}/auth/login?error=invalid_code`)
+      return NextResponse.redirect(`${requestUrl.origin}/login?error=invalid_code`)
     }
     console.log("[Auth Callback] Successfully exchanged code for session")
   }
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   // Check if this is a password recovery flow based on type parameter
   if (type === "recovery") {
     console.log("[Auth Callback] Detected password recovery, redirecting to reset password page")
-    return NextResponse.redirect(`${requestUrl.origin}/auth/reset-password`)
+    return NextResponse.redirect(`${requestUrl.origin}/reset-password`)
   }
 
   // Default redirect to homepage for other auth flows (signup confirmation, etc.)

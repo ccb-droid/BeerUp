@@ -75,7 +75,10 @@ export async function middleware(req: NextRequest) {
 
   const isAuthenticated = !!session
 
-  const isAuthPage = req.nextUrl.pathname.startsWith("/auth")
+  const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
+                     req.nextUrl.pathname.startsWith("/register") || 
+                     req.nextUrl.pathname.startsWith("/forgot-password") || 
+                     req.nextUrl.pathname.startsWith("/reset-password")
   const isReviewCreationPage = req.nextUrl.pathname === "/reviews/new"
   const isAccountPage = req.nextUrl.pathname.startsWith("/account")
 
@@ -86,7 +89,7 @@ export async function middleware(req: NextRequest) {
 
   // Redirect unauthenticated users to login when trying to access protected routes
   if (!isAuthenticated && (isReviewCreationPage || isAccountPage)) {
-    const redirectUrl = new URL("/auth/login", req.url)
+    const redirectUrl = new URL("/login", req.url)
     redirectUrl.searchParams.set("redirectTo", req.nextUrl.pathname)
     console.log(`[Middleware] Unauthenticated access to ${req.nextUrl.pathname}, redirecting to: ${redirectUrl.toString()}`)
     return NextResponse.redirect(redirectUrl)
@@ -94,14 +97,14 @@ export async function middleware(req: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   // (unless they are trying to complete a flow like reset password or email confirmation)
-  const isAuthCallback = req.nextUrl.pathname.startsWith("/auth/callback") || 
-                         req.nextUrl.pathname.startsWith("/auth/reset-password") ||
-                         req.nextUrl.pathname.startsWith("/auth/confirm") // Add other auth flow paths if needed
+  const isAuthCallback = req.nextUrl.pathname.startsWith("/callback") || 
+                         req.nextUrl.pathname.startsWith("/reset-password") ||
+                         req.nextUrl.pathname.startsWith("/confirm") // Add other auth flow paths if needed
 
   if (isAuthenticated && isAuthPage && !isAuthCallback) {
     let redirectTo = req.nextUrl.searchParams.get("redirectTo")
     // Prevent redirect loops to auth pages
-    if (redirectTo && redirectTo.startsWith("/auth")) {
+    if (redirectTo && (redirectTo.startsWith("/login") || redirectTo.startsWith("/register") || redirectTo.startsWith("/forgot-password") || redirectTo.startsWith("/reset-password"))) {
         redirectTo = "/"
     } else if (!redirectTo) {
         redirectTo = "/"
@@ -126,9 +129,9 @@ export const config = {
      * - robots.txt (robots file)
      * - sitemap.xml (sitemap file)
      * - assets (static assets in /public/assets)
-     * - auth/callback (allow Supabase redirect)
-     * - auth/confirm (allow email confirmation)
-     * - auth/reset-password (allow password reset flow)
+     * - callback (allow Supabase redirect)
+     * - confirm (allow email confirmation)
+     * - reset-password (allow password reset flow)
      */
     "/((?!api|_next/static|_next/image|favicon.ico|images|manifest.json|robots.txt|sitemap.xml|assets).*)",
   ],

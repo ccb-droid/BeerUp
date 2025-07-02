@@ -1,30 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { z } from "zod"
-
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
-})
-
-const registerSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(9, "Password must be at least 9 characters long"),
-  username: z.string().min(1, "Username is required"),
-  dob: z.string().min(1, "Date of birth is required"),
-})
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Invalid email address"),
-})
-
-const resetPasswordSchema = z.object({
-  password: z.string().min(9, "Password must be at least 9 characters long"),
-  confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-})
+import { 
+  loginSchema, 
+  registerSchema, 
+  forgotPasswordSchema, 
+  resetPasswordSchema 
+} from "@/lib/validations/auth"
 
 export async function signInWithEmail(formData: FormData) {
   const supabase = await createClient()
@@ -74,19 +55,7 @@ export async function signUp(formData: FormData) {
 
   const { email, password, username, dob } = validatedFields.data
 
-  // Check if user is at least 18 years old
-  const birthDate = new Date(dob)
-  const today = new Date()
-  const age = today.getFullYear() - birthDate.getFullYear()
-  const monthDiff = today.getMonth() - birthDate.getMonth()
-  
-  if (age < 18 || (age === 18 && monthDiff < 0) || 
-      (age === 18 && monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    return {
-      message: "You must be at least 18 years old to register",
-    }
-  }
-
+  // Age validation is already handled by the Zod schema
   const { error } = await supabase.auth.signUp({
     email,
     password,
@@ -123,7 +92,7 @@ export async function forgotPassword(formData: FormData) {
   const { email } = validatedFields.data
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/callback`,
   })
 
   if (error) {
