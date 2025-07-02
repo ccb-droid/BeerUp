@@ -95,11 +95,26 @@ export async function forgotPassword(formData: FormData) {
 
   const { email } = validatedFields.data
 
+  // Determine the base URL for the redirect - use the actual Vercel deployment URL
+  let baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  
+  if (!baseUrl) {
+    if (process.env.VERCEL_URL) {
+      baseUrl = `https://${process.env.VERCEL_URL}`
+    } else {
+      // Fallback to the known Vercel URL for this deployment
+      baseUrl = 'https://v0-new-project-mr6vrs4jhyg-ccb-droids-projects.vercel.app'
+    }
+  }
+
+  console.log("[Auth] Using base URL for password reset:", baseUrl)
+
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/callback`,
+    redirectTo: `${baseUrl}/callback?type=recovery`,
   })
 
   if (error) {
+    console.error("[Auth] Password reset error:", error)
     return {
       message: error.message,
     }

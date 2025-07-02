@@ -5,10 +5,28 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get("code")
   const type = requestUrl.searchParams.get("type")
+  const error = requestUrl.searchParams.get("error")
+  const errorCode = requestUrl.searchParams.get("error_code")
+  const errorDescription = requestUrl.searchParams.get("error_description")
 
   console.log("[Auth Callback] Request URL:", requestUrl.toString())
   console.log("[Auth Callback] Code:", code)
   console.log("[Auth Callback] Type:", type)
+  console.log("[Auth Callback] Error:", error)
+
+  // Handle errors from Supabase
+  if (error) {
+    console.error("[Auth Callback] Supabase error:", { error, errorCode, errorDescription })
+    
+    if (errorCode === "otp_expired" || error === "access_denied") {
+      // The link was likely consumed by email prefetching or has expired
+      console.log("[Auth Callback] OTP expired or access denied - likely email prefetching issue")
+      return NextResponse.redirect(`${requestUrl.origin}/forgot-password?error=expired`)
+    }
+    
+    // For other errors, redirect to login with error
+    return NextResponse.redirect(`${requestUrl.origin}/login?error=${error}`)
+  }
 
   if (code) {
     const supabase = createClient()

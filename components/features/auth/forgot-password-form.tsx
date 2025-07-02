@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,11 +12,21 @@ import { useForgotPassword } from "@/lib/hooks/use-auth"
 
 export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [urlError, setUrlError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
   const forgotPasswordMutation = useForgotPassword()
+
+  useEffect(() => {
+    const error = searchParams.get("error")
+    if (error === "expired") {
+      setUrlError("Your password reset link is invalid or has been used. This can happen if your email provider scanned the link for security. Please request a new reset link.")
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setUrlError(null) // Clear any previous URL error
     
     const formData = new FormData(e.currentTarget)
     await forgotPasswordMutation.mutateAsync(formData)
@@ -37,14 +48,15 @@ export function ForgotPasswordForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {forgotPasswordMutation.error && (
+            {(forgotPasswordMutation.error || urlError) && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>
-                  {forgotPasswordMutation.error instanceof Error 
+                  {urlError || 
+                   (forgotPasswordMutation.error instanceof Error 
                     ? forgotPasswordMutation.error.message 
-                    : "An error occurred sending the reset email"}
+                    : "An error occurred sending the reset email")}
                 </AlertDescription>
               </Alert>
             )}
