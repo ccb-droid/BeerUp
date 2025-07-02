@@ -20,7 +20,7 @@ export default function MyReviewsPage() {
   if (!user) {
     return (
       <div className="space-y-6 sm:space-y-8">
-        <NavigationBreadcrumb />
+        {/* <NavigationBreadcrumb /> */}
         <div className="text-center py-12">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
             My Reviews
@@ -36,7 +36,7 @@ export default function MyReviewsPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Navigation Breadcrumb */}
-      <NavigationBreadcrumb />
+      {/* <NavigationBreadcrumb /> */}
       
       {/* Header Section */}
       <div className="flex flex-col items-start gap-4">

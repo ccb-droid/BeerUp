@@ -65,7 +65,7 @@ export default function BeerDetailClient({
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Navigation Breadcrumb */}
-      <NavigationBreadcrumb beerName={beerData.name} />
+      {/* <NavigationBreadcrumb beerName={beerData.name} /> */}
       
       {/* Header Section */}
       <div className="flex flex-col items-start gap-4">
