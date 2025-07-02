@@ -1,20 +1,9 @@
 // Types
 export * from "./types";
 
-// Data layer (repositories)
-export * from "./data/beers";
-export * from "./data/reviews";
-export * from "./data/profiles";
-
-// Service layer (business logic)
-export * from "./services/beers-client";
-export * from "./services/beers-server";
-
 // Server actions
 export * from "./actions/beers";
-
-// Client utilities
-export * from "./client/beers";
+export * from "./actions/reviews";
 
 // Supabase clients
 // Note: Server createClient is not exported here to prevent client-side bundling

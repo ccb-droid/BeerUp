@@ -1,7 +1,7 @@
 "use client"
 
 import { type FullReview } from "@/lib/types"
-import { MyReviewsList } from "@/components/my-reviews-list"
+import { MyReviewsList } from "@/components/features/reviews/my-reviews-list"
 
 interface HomePageClientContentProps {
   userReviews: FullReview[] | null

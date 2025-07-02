@@ -1,16 +1,19 @@
-import { getCurrentSession } from "@/lib/auth/client"
+import { getCurrentSession } from "@/lib/auth/api"
 import { notFound } from "next/navigation"
 import BeerDetailClient from "./BeerDetailClient"
-import { getUserReviewForBeerAction } from "@/lib/actions/reviewActions"
+import { getUserReviewForBeerAction } from "@/lib/actions/reviews"
 import { getBeerById } from "@/lib/actions/beers"
 import { type UserReviewData, type BeerData } from "./BeerDetailClient"
 
 // Page components in the app directory receive params as a prop
-export default async function BeerDetailPage({ params }: { params: { id: string } }) {
+export default async function BeerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  // Await the params in Next.js 15
+  const { id } = await params
+  
   // Check if user is authenticated
   const { data: { session } } = await getCurrentSession()
   const userId = session?.user?.id
-  const beerIdFromParams = params.id
+  const beerIdFromParams = id
 
   // Fetch the beer details first
   const fetchedBeer = await getBeerById(beerIdFromParams)

@@ -1,5 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr"
-import type { Database } from "@/lib/database.types"
+import type { Database } from "./types"
 
 // Note: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are read from process.env
 // Ensure they are available in your client-side environment (e.g., prefixed with NEXT_PUBLIC_).

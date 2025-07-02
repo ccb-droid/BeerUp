@@ -5,11 +5,11 @@ import { Edit, Trash2, Star, Calendar, Beer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
-import { AddReviewDialog } from "@/components/add-review/add-review-dialog"
+import { AddReviewDialog } from "@/components/features/reviews/add-review-dialog"
 import { Badge } from "@/components/ui/badge"
-import OtherReviews from "@/components/other-reviews"
+import OtherReviews from "@/components/features/reviews/other-reviews"
 import { Card, CardContent } from "@/components/ui/card"
-import NavigationBreadcrumb from "@/components/navigation-breadcrumb"
+import NavigationBreadcrumb from "@/components/layout/navigation-breadcrumb"
 
 export interface BeerData {
   id: string

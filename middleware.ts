@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
-import { Database } from "@/lib/database.types" // Assuming you have this types file
+import { Database } from "@/lib/supabase/types"
 
 // Get environment variables if not already in lib/supabase/server.ts or ensure they are accessible
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!

@@ -1,0 +1,24 @@
+import { resetPassword } from "@/lib/actions/auth"
+import { NextRequest, NextResponse } from "next/server"
+
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData()
+    const result = await resetPassword(formData)
+    
+    if (result?.message || result?.errors) {
+      return NextResponse.json(
+        { message: result.message || "Validation errors", errors: result.errors },
+        { status: 400 }
+      )
+    }
+    
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("API - Reset password error:", error)
+    return NextResponse.json(
+      { message: "An error occurred resetting password" },
+      { status: 500 }
+    )
+  }
+} 

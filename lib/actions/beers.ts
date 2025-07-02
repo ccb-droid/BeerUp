@@ -1,22 +1,30 @@
 "use server";
 
-import { createServerBeersService } from "../services/beers-server";
+import { createClient } from "../supabase/server";
 import type { Beer, NewBeer } from "../types";
-
-const beersService = createServerBeersService();
+import { beerSchema, type BeerInput, type BeerSearch } from "../validations/beer";
 
 /**
  * Server action to get all beers
  */
 export async function getBeers(): Promise<Beer[]> {
-  const result = await beersService.getAllBeers();
-  
-  if (result.error) {
-    console.error("Server Action - getBeers:", result.error);
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("beers")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Server Action - getBeers:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Server Action - getBeers unexpected error:", error);
     return [];
   }
-  
-  return result.data || [];
 }
 
 /**
@@ -27,14 +35,24 @@ export async function getBeerById(id: string): Promise<Beer | null> {
     return null;
   }
 
-  const result = await beersService.getBeerById(id);
-  
-  if (result.error) {
-    console.error("Server Action - getBeerById:", result.error);
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("beers")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Server Action - getBeerById:", error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Server Action - getBeerById unexpected error:", error);
     return null;
   }
-  
-  return result.data;
 }
 
 /**
@@ -45,28 +63,61 @@ export async function searchBeers(query: string): Promise<Beer[]> {
     return [];
   }
 
-  const result = await beersService.searchBeers(query);
-  
-  if (result.error) {
-    console.error("Server Action - searchBeers:", result.error);
+  try {
+    const supabase = await createClient();
+    const searchTerm = `%${query.trim()}%`;
+    
+    const { data, error } = await supabase
+      .from("beers")
+      .select("*")
+      .or(`name.ilike.${searchTerm},brewery.ilike.${searchTerm},style.ilike.${searchTerm}`)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Server Action - searchBeers:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Server Action - searchBeers unexpected error:", error);
     return [];
   }
-  
-  return result.data || [];
 }
 
 /**
  * Server action to create a new beer
  */
 export async function createBeer(beerData: NewBeer): Promise<Beer | null> {
-  const result = await beersService.createBeer(beerData);
-  
-  if (result.error) {
-    console.error("Server Action - createBeer:", result.error);
+  try {
+    // Validate required fields
+    if (!beerData.name?.trim() || !beerData.brewery?.trim()) {
+      console.error("Server Action - createBeer: Beer name and brewery are required");
+      return null;
+    }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("beers")
+      .insert({
+        ...beerData,
+        name: beerData.name.trim(),
+        brewery: beerData.brewery.trim(),
+        style: beerData.style?.trim() || "",
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Server Action - createBeer:", error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Server Action - createBeer unexpected error:", error);
     return null;
   }
-  
-  return result.data;
 }
 
 /**
@@ -82,12 +133,103 @@ export async function findOrCreateBeer(
     return null;
   }
 
-  const result = await beersService.findOrCreateBeer(name, brewery, style || "", imageUrl);
-  
-  if (result.error) {
-    console.error("Server Action - findOrCreateBeer:", result.error);
+  try {
+    const supabase = await createClient();
+    
+    // Try to find existing beer first
+    const { data: existing, error: findError } = await supabase
+      .from("beers")
+      .select("*")
+      .eq("name", name.trim())
+      .eq("brewery", brewery.trim())
+      .eq("style", style.trim())
+      .maybeSingle();
+
+    if (findError) {
+      console.error("Server Action - findOrCreateBeer search error:", findError);
+      return null;
+    }
+
+    if (existing) {
+      return existing;
+    }
+
+    // Create new beer if not found
+    const { data: newBeer, error: createError } = await supabase
+      .from("beers")
+      .insert({
+        name: name.trim(),
+        brewery: brewery.trim(),
+        style: style.trim(),
+        image_url: imageUrl || null,
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      console.error("Server Action - findOrCreateBeer create error:", createError);
+      return null;
+    }
+
+    return newBeer;
+  } catch (error) {
+    console.error("Server Action - findOrCreateBeer unexpected error:", error);
     return null;
   }
+}
 
-  return result.data;
+/**
+ * Server action to add a new beer with validation
+ */
+export async function addBeer(beerData: BeerInput): Promise<Beer> {
+  const validated = beerSchema.parse(beerData);
+  
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("beers")
+    .insert(validated)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Server action to update a beer
+ */
+export async function updateBeer(id: string, beerData: Partial<BeerInput>): Promise<Beer> {
+  const validated = beerSchema.partial().parse(beerData);
+  
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("beers")
+    .update(validated)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+/**
+ * Server action to delete a beer
+ */
+export async function deleteBeer(id: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("beers")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 } 

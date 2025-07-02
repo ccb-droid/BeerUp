@@ -1,6 +1,6 @@
 import { Suspense } from "react"
-import RecentReviews from "@/components/recent-reviews"
-import NavigationBreadcrumb from "@/components/navigation-breadcrumb"
+import RecentReviews from "@/components/features/reviews/recent-reviews"
+import NavigationBreadcrumb from "@/components/layout/navigation-breadcrumb"
 
 export default function RecentReviewsPage() {
   return (

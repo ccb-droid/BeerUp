@@ -1,5 +1,5 @@
 // Re-export database types for easier importing
-import type { Database } from "../database.types";
+import type { Database } from "../supabase/types";
 
 export type { Database };
 

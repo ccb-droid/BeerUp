@@ -10,8 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { useAuth } from "@/lib/auth/client"
-import { getUserProfile, updateUserProfile } from "@/lib/auth/client"
+import { useAuth } from "@/lib/auth/context"
+import { getUserProfile, updateUserProfile } from "@/lib/auth"
 
 export default function AccountPage() {
   const [username, setUsername] = useState("")
