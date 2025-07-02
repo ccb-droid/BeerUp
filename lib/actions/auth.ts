@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import { 
   loginSchema, 
   registerSchema, 
-  forgotPasswordSchema, 
   resetPasswordSchema 
 } from "@/lib/validations/auth"
 
@@ -77,57 +76,6 @@ export async function signUp(formData: FormData) {
 
   return {
     success: true,
-  }
-}
-
-export async function forgotPassword(formData: FormData) {
-  const supabase = await createClient()
-  
-  const validatedFields = forgotPasswordSchema.safeParse({
-    email: formData.get("email"),
-  })
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-    }
-  }
-
-  const { email } = validatedFields.data
-
-  // Determine the base URL for the redirect - use the actual Vercel deployment URL
-  let baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-  
-  if (!baseUrl) {
-    if (process.env.VERCEL_URL) {
-      baseUrl = `https://${process.env.VERCEL_URL}`
-    } else {
-      // Fallback to the known Vercel URL for this deployment
-      baseUrl = 'https://v0-new-project-mr6vrs4jhyg-ccb-droids-projects.vercel.app'
-    }
-  }
-
-  // Ensure baseUrl doesn't have trailing slash
-  baseUrl = baseUrl.replace(/\/$/, '')
-  
-  // Construct the full redirect URL for password reset
-  const redirectUrl = `${baseUrl}/callback?type=recovery`
-  
-  console.log("[Auth] Using redirect URL for password reset:", redirectUrl)
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: redirectUrl,
-  })
-
-  if (error) {
-    console.error("[Auth] Password reset error:", error)
-    return {
-      message: error.message,
-    }
-  }
-
-  return {
-    message: "Password reset email sent! Check your inbox.",
   }
 }
 

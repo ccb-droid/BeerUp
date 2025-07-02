@@ -75,6 +75,25 @@ export const updateUserProfile = async (
   profileData: UpdateProfile
 ): Promise<Profile | null> => {
   try {
+    // If username is being updated, check if it already exists for another user
+    if (profileData.username) {
+      const { data: existingProfile, error: checkError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", profileData.username)
+        .neq("id", userId)
+        .limit(1);
+
+      if (checkError) {
+        console.error("Error checking username uniqueness:", checkError);
+        throw new Error("Failed to validate username. Please try again.");
+      }
+
+      if (existingProfile && existingProfile.length > 0) {
+        throw new Error("This username is already taken. Please choose a different one.");
+      }
+    }
+
     const { data, error } = await supabase
       .from("profiles")
       .update({
@@ -87,12 +106,27 @@ export const updateUserProfile = async (
 
     if (error) {
       console.error("Error updating profile:", error);
-      return null;
+      
+      // Provide more specific error messages based on error code
+      if (error.code === '23505') { // Unique constraint violation
+        throw new Error("This username is already taken. Please choose a different one.");
+      } else if (error.code === 'PGRST116') { // No rows updated
+        throw new Error("Profile not found. Please try logging out and back in.");
+      } else {
+        throw new Error(`Failed to update profile: ${error.message}`);
+      }
     }
+    
     return data as Profile;
   } catch (error) {
     console.error("Unexpected error in updateProfile:", error);
-    return null;
+    
+    // Re-throw the error instead of returning null so the calling code gets the specific error message
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error("An unexpected error occurred while updating your profile.");
+    }
   }
 };
 

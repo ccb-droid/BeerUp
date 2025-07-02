@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,73 +11,78 @@ import { AlertCircle, Beer } from "lucide-react"
 import { toast } from "sonner"
 import { resetUserPassword } from "@/lib/auth/api"
 
-export function ForgotPasswordForm() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [urlError, setUrlError] = useState<string | null>(null)
-  const [countdown, setCountdown] = useState<number | null>(null)
+// Custom hook for URL error handling
+function useUrlError() {
   const searchParams = useSearchParams()
+  const error = searchParams.get("error")
+  
+  if (error === "expired") {
+    return "Your password reset link is invalid or has been used. This can happen if your email provider scanned the link for security. Please request a new reset link."
+  }
+  if (error === "no_session") {
+    return "Your password reset session has expired. Please request a new reset link."
+  }
+  return null
+}
+
+// Custom hook for countdown with redirect
+function useCountdownRedirect() {
+  const [countdown, setCountdown] = useState<number | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    const error = searchParams.get("error")
-    if (error === "expired") {
-      setUrlError("Your password reset link is invalid or has been used. This can happen if your email provider scanned the link for security. Please request a new reset link.")
-    } else if (error === "no_session") {
-      setUrlError("Your password reset session has expired. Please request a new reset link.")
-    }
-  }, [searchParams])
-
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return
-
-    if (countdown === 0) {
-      router.push("/login")
-      return
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown(countdown - 1)
+  const startCountdown = (seconds: number = 3) => {
+    setCountdown(seconds)
+    
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval)
+          router.push("/login")
+          return null
+        }
+        return prev - 1
+      })
     }, 1000)
+  }
 
-    return () => clearTimeout(timer)
-  }, [countdown, router])
+  return { countdown, startCountdown }
+}
+
+export function ForgotPasswordForm() {
+  const [isLoading, setIsLoading] = useState(false)
+  const urlError = useUrlError()
+  const { countdown, startCountdown } = useCountdownRedirect()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    setUrlError(null) // Clear any previous URL error
     
     const formData = new FormData(e.currentTarget)
-    
-    try {
-      const email = formData.get("email") as string
+    const email = formData.get("email") as string
 
-      // Call Supabase directly so the PKCE code verifier is stored in the user's browser.
+    try {
       const { error } = await resetUserPassword(email)
 
       if (error) {
         throw new Error(error.message)
       }
 
-      // Show success toast with countdown
       toast.success("Password reset email sent!", {
-        description: `Check your email for the reset link. Redirecting to login in 3 seconds...`,
-        duration: Infinity, // Keep toast visible during countdown
+        description: "Check your email for the reset link. Redirecting to login in 3 seconds...",
+        duration: Infinity,
       })
 
-      // Start countdown
-      setCountdown(3)
+      startCountdown(3)
 
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to send reset email. Please try again."
-      toast.error("Error", {
-        description: message,
-      })
+      toast.error("Error", { description: message })
     } finally {
       setIsLoading(false)
     }
   }
+
+  const isDisabled = isLoading || countdown !== null
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40">
@@ -97,9 +102,7 @@ export function ForgotPasswordForm() {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
-                <AlertDescription>
-                  {urlError}
-                </AlertDescription>
+                <AlertDescription>{urlError}</AlertDescription>
               </Alert>
             )}
 
@@ -121,11 +124,11 @@ export function ForgotPasswordForm() {
                 type="email"
                 placeholder="me@example.com"
                 required
-                disabled={isLoading || countdown !== null}
+                disabled={isDisabled}
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading || countdown !== null}>
+            <Button type="submit" className="w-full" disabled={isDisabled}>
               {isLoading ? "Sending..." : countdown !== null ? `Redirecting in ${countdown}...` : "Send Reset Email"}
             </Button>
           </form>
