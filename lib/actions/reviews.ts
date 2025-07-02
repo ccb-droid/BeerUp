@@ -219,13 +219,13 @@ export async function getOtherReviewsAction(
 ): Promise<{ data: any[] | null; error: string | null }> {
   try {
     const supabase = await createClient();
-    const offset = (page - 1) * pageSize;
+    const offset = page * pageSize;
     
     let query = supabase
       .from("reviews")
       .select(`
         *,
-        profiles!inner(username, full_name)
+        profiles!inner(username)
       `)
       .eq("beer_id", beerId)
       .order("created_at", { ascending: false })
@@ -255,14 +255,14 @@ export async function getRecentReviewsAction(
 ): Promise<{ data: any[] | null; error: string | null }> {
   try {
     const supabase = await createClient();
-    const offset = (page - 1) * pageSize;
+    const offset = page * pageSize;
 
     const { data, error } = await supabase
       .from("reviews")
       .select(`
         *,
-        beer:beers!inner(*),
-        profiles!inner(username, full_name)
+        beers!inner(*),
+        profiles!inner(username)
       `)
       .order("created_at", { ascending: false })
       .range(offset, offset + pageSize - 1);

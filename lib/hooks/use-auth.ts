@@ -1,10 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth/context"
 
 export function useSignIn() {
   const router = useRouter()
   const { toast } = useToast()
+  const { refreshSession } = useAuth()
   
   return useMutation({
     mutationFn: async (formData: FormData) => {
@@ -20,11 +22,13 @@ export function useSignIn() {
       
       return response.json()
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success",
         description: "Signed in successfully!",
       })
+      // Refresh auth session to sync client state with server session
+      await refreshSession()
       router.push("/")
     },
     onError: (error) => {
@@ -40,6 +44,7 @@ export function useSignIn() {
 export function useSignUp() {
   const router = useRouter()
   const { toast } = useToast()
+  const { refreshSession } = useAuth()
   
   return useMutation({
     mutationFn: async (formData: FormData) => {
@@ -55,11 +60,13 @@ export function useSignUp() {
       
       return response.json()
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success",
         description: "Account created successfully!",
       })
+      // Refresh auth session to sync client state with server session
+      await refreshSession()
       router.push("/")
     },
     onError: (error) => {
@@ -108,6 +115,7 @@ export function useForgotPassword() {
 export function useResetPassword() {
   const router = useRouter()
   const { toast } = useToast()
+  const { refreshSession } = useAuth()
   
   return useMutation({
     mutationFn: async (formData: FormData) => {
@@ -123,11 +131,13 @@ export function useResetPassword() {
       
       return response.json()
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success",
         description: "Password reset successfully!",
       })
+      // Refresh auth session to sync client state with server session
+      await refreshSession()
       router.push("/")
     },
     onError: (error) => {
@@ -143,6 +153,7 @@ export function useResetPassword() {
 export function useSignOut() {
   const router = useRouter()
   const { toast } = useToast()
+  const { refreshSession } = useAuth()
   
   return useMutation({
     mutationFn: async () => {
@@ -156,11 +167,13 @@ export function useSignOut() {
       
       return response.json()
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Success",
         description: "Signed out successfully!",
       })
+      // Refresh auth session to sync client state with server session
+      await refreshSession()
       router.push("/")
     },
     onError: () => {
