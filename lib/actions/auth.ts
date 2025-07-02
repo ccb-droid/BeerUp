@@ -34,7 +34,9 @@ export async function signInWithEmail(formData: FormData) {
     }
   }
 
-  redirect("/")
+  return {
+    success: true,
+  }
 }
 
 export async function signUp(formData: FormData) {
@@ -73,7 +75,9 @@ export async function signUp(formData: FormData) {
     }
   }
 
-  redirect("/")
+  return {
+    success: true,
+  }
 }
 
 export async function forgotPassword(formData: FormData) {
@@ -132,11 +136,15 @@ export async function resetPassword(formData: FormData) {
     }
   }
 
-  redirect("/")
+  return {
+    success: true,
+  }
 }
 
 export async function signOut() {
   const supabase = await createClient()
   await supabase.auth.signOut()
-  redirect("/")
+  return {
+    success: true,
+  }
 } 
