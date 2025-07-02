@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Beer } from "lucide-react"
 import { toast } from "sonner"
+import { resetUserPassword } from "@/lib/auth/api"
 
 export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -50,18 +51,15 @@ export function ForgotPasswordForm() {
     const formData = new FormData(e.currentTarget)
     
     try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        body: formData,
-      })
-      
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || "Failed to send reset email")
+      const email = formData.get("email") as string
+
+      // Call Supabase directly so the PKCE code verifier is stored in the user's browser.
+      const { error } = await resetUserPassword(email)
+
+      if (error) {
+        throw new Error(error.message)
       }
 
-      const result = await response.json()
-      
       // Show success toast with countdown
       toast.success("Password reset email sent!", {
         description: `Check your email for the reset link. Redirecting to login in 3 seconds...`,
@@ -70,7 +68,7 @@ export function ForgotPasswordForm() {
 
       // Start countdown
       setCountdown(3)
-      
+
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to send reset email. Please try again."
       toast.error("Error", {
