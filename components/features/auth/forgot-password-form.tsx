@@ -68,8 +68,8 @@ export function ForgotPasswordForm() {
       }
 
       toast.success("Password reset email sent!", {
-        description: "Check your email for the reset link. Redirecting to login in 3 seconds...",
-        duration: Infinity,
+        description: "Check your email for the reset link. Redirecting to login soon...",
+        duration: 3,
       })
 
       startCountdown(3)

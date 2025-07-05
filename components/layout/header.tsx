@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth/context"
 import { useToast } from "@/components/layout/toast-provider"
+import { toast } from "sonner"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import SearchBar from "@/components/features/beers/search-bar"
 import { cn } from "@/lib/utils"
@@ -26,7 +27,7 @@ export default function Header() {
       const result = await signOut()
 
       if (result.success) {
-        showToast("Logged out successfully", "success")
+        toast.success("Logged out successfully")
 
         // Small delay to ensure auth state is updated
         setTimeout(() => {
@@ -34,7 +35,7 @@ export default function Header() {
           router.refresh()
         }, 100)
       } else {
-        showToast("Error logging out", "error")
+        toast.error("Error logging out")
       }
     } catch (error) {
       console.error("Logout error:", error)

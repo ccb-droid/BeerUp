@@ -33,13 +33,15 @@ export const signOutUser = async () => {
 
 export const resetUserPassword = async (email: string) => {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const redirectTo = `${baseUrl}/callback?type=recovery`;
+  console.log(redirectTo);
   return await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${
-      baseUrl
-    }/callback?type=recovery`,
-  });
+    redirectTo,
+  }
+);
 };
 
 export const getCurrentSession = async () => {
   return await supabase.auth.getSession();
 }; 
+
