@@ -16,7 +16,7 @@ export const signUpUser = async (
         date_of_birth: dob,
       },
       emailRedirectTo: `${
-        typeof window !== "undefined" ? window.location.origin : ""
+        typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL
       }/callback`,
     },
   });
@@ -33,7 +33,7 @@ export const signOutUser = async () => {
 
 export const resetUserPassword = async (email: string) => {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  const redirectTo = `${baseUrl}/callback?type=recovery`;
+  const redirectTo = `${baseUrl}/callback`;
   console.log(redirectTo);
   return await supabase.auth.resetPasswordForEmail(email, {
     redirectTo,
@@ -44,4 +44,3 @@ export const resetUserPassword = async (email: string) => {
 export const getCurrentSession = async () => {
   return await supabase.auth.getSession();
 }; 
-
