@@ -32,9 +32,9 @@ export const signOutUser = async () => {
 };
 
 export const resetUserPassword = async (email: string) => {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  const redirectTo = `${baseUrl}/callback`;
-  console.log(redirectTo);
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL;
+  const redirectTo = `${baseUrl}/reset-password`;
+  console.log('[Auth API] Password reset redirect URL:', redirectTo);
   return await supabase.auth.resetPasswordForEmail(email, {
     redirectTo,
   }

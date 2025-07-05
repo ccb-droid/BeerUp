@@ -22,6 +22,12 @@ function useUrlError() {
   if (error === "no_session") {
     return "Your password reset session has expired. Please request a new reset link."
   }
+  if (error === "invalid_session") {
+    return "Invalid reset session. Please request a new reset link."
+  }
+  if (error === "invalid_tokens") {
+    return "Invalid or expired reset tokens. Please request a new reset link."
+  }
   return null
 }
 

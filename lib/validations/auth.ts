@@ -7,7 +7,7 @@ export const emailSchema = z.string()
 
 // Password validation schema
 export const passwordSchema = z.string()
-  .min(6, "Password must be at least 6 characters")
+  .min(9, "Password must be at least 9 characters")
 
 // Username validation schema
 export const usernameSchema = z.string()

@@ -38,18 +38,22 @@ export default function AuthCallbackPage() {
           
           if (event === 'PASSWORD_RECOVERY') {
             console.log('[Auth Callback] Password recovery detected, redirecting to reset password');
+            // Set processing to false before redirecting
+            setIsProcessing(false);
             router.replace('/reset-password');
             return;
           }
           
           if (event === 'SIGNED_IN' && session) {
             console.log('[Auth Callback] User signed in, redirecting to homepage');
+            setIsProcessing(false);
             router.replace('/');
             return;
           }
           
           if (event === 'TOKEN_REFRESHED' && session) {
             console.log('[Auth Callback] Token refreshed, redirecting to homepage');
+            setIsProcessing(false);
             router.replace('/');
             return;
           }
@@ -68,7 +72,19 @@ export default function AuthCallbackPage() {
         }
 
         if (session) {
-          console.log('[Auth Callback] Session found, redirecting to homepage');
+          // Check if this is a password recovery session
+          // Password recovery sessions have a specific access token pattern
+          const isPasswordRecovery = session.user?.recovery_sent_at || 
+                                   window.location.hash.includes('type=recovery') ||
+                                   window.location.search.includes('type=recovery');
+          
+          if (isPasswordRecovery) {
+            console.log('[Auth Callback] Password recovery session detected, redirecting to reset password');
+            router.replace('/reset-password');
+            return;
+          }
+          
+          console.log('[Auth Callback] Regular session found, redirecting to homepage');
           router.replace('/');
           return;
         }
