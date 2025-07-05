@@ -15,4 +15,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Supabase client environment variables not set.")
 }
 
-export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+  },
+})
