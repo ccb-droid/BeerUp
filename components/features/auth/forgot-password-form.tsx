@@ -10,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Beer } from "lucide-react"
 import { toast } from "sonner"
 import { resetUserPassword } from "@/lib/auth/api"
+import { getBaseUrl } from "@/lib/auth/api"
 
 // Custom hook for URL error handling
 function useUrlError() {
@@ -58,7 +59,9 @@ export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = useState(false)
   const urlError = useUrlError()
   const { countdown, startCountdown } = useCountdownRedirect()
-
+  const baseUrl = getBaseUrl()
+  console.log(baseUrl)
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
