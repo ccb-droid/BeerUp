@@ -157,6 +157,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
             .upload(fileName, imageFile)
 
           if (uploadError) {
+            console.error("Error uploading new beer image:", uploadError)
             showToast(`Image upload failed: ${uploadError.message}`, "error")
             setIsLoading(false)
             return
@@ -178,6 +179,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
         )
 
         if (!newBeer?.id) {
+          console.error("Failed to create or find beer, response:", newBeer)
           throw new Error("Failed to create or find beer")
         }
 
@@ -219,6 +221,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
       const result = await addReview(formData)
 
       if (!result.success) {
+        console.error("addReview action failed:", result.error)
         throw new Error(result.error || "Failed to create review")
       }
 
@@ -236,8 +239,18 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
       }
       
     } catch (error: any) {
-      console.error("Error creating review:", error)
-      showToast(error.message || "Failed to add review", "error")
+      console.error("Error creating review:", {
+        message: error.message,
+        beerName,
+        selectedBeer,
+        brewery,
+        style,
+        hasImage: !!imageFile,
+        rating,
+        reviewTextLength: reviewText.length,
+        errorObject: error
+      })
+      showToast(error.message || "Failed to add review. Please contact nic/david.", "error")
     } finally {
       setIsLoading(false)
     }

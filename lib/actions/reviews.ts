@@ -19,16 +19,29 @@ export async function addReview(
     } = await supabase.auth.getUser();
 
     if (authError) {
-      console.error("Action - Auth error:", authError);
+      console.error("Action `addReview`: Auth error", { error: authError });
       return { success: false, error: "Authentication error occurred." };
     }
 
     if (!user) {
-      console.error("Action - No authenticated user found");
+      console.error("Action `addReview`: No authenticated user found");
       return { success: false, error: "User not authenticated." };
     }
+    
+    const userId = user.id;
 
-    console.log("Action - Authenticated user:", { id: user.id, email: user.email });
+    console.log("Action `addReview`: Authenticated user", { userId: userId, email: user.email });
+
+    // Log formData contents for debugging, excluding sensitive/large values
+    const formDataDebug: { [key: string]: any } = {};
+    formData.forEach((value, key) => {
+      if (value instanceof File) {
+        formDataDebug[key] = { name: value.name, size: value.size, type: value.type };
+      } else {
+        formDataDebug[key] = value;
+      }
+    });
+    console.log("Action `addReview`: Processing FormData", { userId, formData: formDataDebug });
 
     const beerId = formData.get("beerId") as string;
     const ratingString = formData.get("rating") as string;
@@ -56,7 +69,7 @@ export async function addReview(
         .upload(fileName, imageFile);
 
       if (uploadError) {
-        console.error("Action - Image upload failed:", uploadError);
+        console.error("Action `addReview`: Image upload failed", { userId, error: uploadError });
         return { success: false, error: `Image upload failed: ${uploadError.message}` };
       }
 
@@ -77,10 +90,12 @@ export async function addReview(
       // typically_drinks: false,
     };
 
-    console.log("Action - Creating review with data:", {
+    console.log("Action `addReview`: Creating review with data", {
+      userId,
       beer_id: reviewData.beer_id,
-      user_id: reviewData.user_id,
-      rating: reviewData.rating
+      rating: reviewData.rating,
+      has_text: !!reviewData.review_text,
+      has_image: !!reviewData.image_url,
     });
 
     const { data: newReview, error: insertError } = await supabase
@@ -90,7 +105,7 @@ export async function addReview(
       .single();
 
     if (insertError || !newReview?.id) {
-      console.error("Action - Error inserting review:", insertError);
+      console.error("Action `addReview`: Error inserting review", { userId, error: insertError });
       
       // Handle specific RLS errors
       if (insertError?.code === '42501') {
@@ -106,7 +121,7 @@ export async function addReview(
       };
     }
 
-    console.log("Action - Successfully created review:", newReview.id);
+    console.log("Action `addReview`: Successfully created review", { userId, reviewId: newReview.id });
 
     // Revalidate the beer detail page and potentially beer listings if they show review summaries
     revalidatePath(`/beers/${beerId}`);
@@ -114,8 +129,8 @@ export async function addReview(
     // Consider revalidating user profile pages if they list user\'s reviews
 
     return { success: true, reviewId: newReview.id };
-  } catch (error) {
-    console.error("Action - Unexpected error in addReview:", error);
+  } catch (error: any) {
+    console.error("Action `addReview`: Unexpected error", { error });
     return {
       success: false,
       error: "An unexpected error occurred while adding the review.",

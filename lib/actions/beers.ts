@@ -130,50 +130,62 @@ export async function findOrCreateBeer(
   imageUrl?: string
 ): Promise<Beer | null> {
   if (!name?.trim() || !brewery?.trim()) {
+    console.error("Action `findOrCreateBeer`: Missing name or brewery");
     return null;
   }
 
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
     
+    const beerDetails = { name: name.trim(), brewery: brewery.trim(), style: style.trim() };
+    console.log("Action `findOrCreateBeer`: Searching for beer", { userId, ...beerDetails });
+
     // Try to find existing beer first
     const { data: existing, error: findError } = await supabase
       .from("beers")
       .select("*")
-      .eq("name", name.trim())
-      .eq("brewery", brewery.trim())
-      .eq("style", style.trim())
+      .eq("name", beerDetails.name)
+      .eq("brewery", beerDetails.brewery)
+      .eq("style", beerDetails.style)
       .maybeSingle();
 
     if (findError) {
-      console.error("Server Action - findOrCreateBeer search error:", findError);
+      console.error("Action `findOrCreateBeer`: Search error", { userId, ...beerDetails, error: findError });
       return null;
     }
 
     if (existing) {
+      console.log("Action `findOrCreateBeer`: Found existing beer", { userId, beerId: existing.id });
       return existing;
     }
 
+    console.log("Action `findOrCreateBeer`: Beer not found, creating new one", { userId, ...beerDetails, imageUrl });
     // Create new beer if not found
     const { data: newBeer, error: createError } = await supabase
       .from("beers")
       .insert({
-        name: name.trim(),
-        brewery: brewery.trim(),
-        style: style.trim(),
+        ...beerDetails,
         image_url: imageUrl || null,
       })
       .select()
       .single();
 
     if (createError) {
-      console.error("Server Action - findOrCreateBeer create error:", createError);
+      console.error("Action `findOrCreateBeer`: Create error", { 
+        userId, 
+        ...beerDetails,
+        isRLSError: createError.code === '42501',
+        error: createError 
+      });
       return null;
     }
 
+    console.log("Action `findOrCreateBeer`: Successfully created new beer", { userId, beerId: newBeer.id });
     return newBeer;
   } catch (error) {
-    console.error("Server Action - findOrCreateBeer unexpected error:", error);
+    console.error("Action `findOrCreateBeer`: Unexpected error", { name, brewery, style, error });
     return null;
   }
 }
