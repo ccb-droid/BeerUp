@@ -321,18 +321,6 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
                     disabled={isLoading}
                   />
                 </div>
-                
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea 
-                    id="description" 
-                    value={description} 
-                    onChange={(e) => setDescription(e.target.value)} 
-                    placeholder="Tasting notes, aroma, appearance, etc."
-                    disabled={isLoading}
-                  />
-                </div>
-                
                 <div>
                   <Label htmlFor="image">
                     {selectedBeer ? "Review Image (Optional)" : "Beer Image"} 
