@@ -82,7 +82,7 @@ export default function Header() {
               ) : (
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/login" className="text-sm sm:text-base">
-                    Sign In
+                    Create Account/Sign In
                   </Link>
                 </Button>
               )}

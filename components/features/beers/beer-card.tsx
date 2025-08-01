@@ -48,7 +48,7 @@ export function BeerCard({ beer }: BeerCardProps) {
         <WaitlistDialog beer={beer}>
           <Button variant="outline" size="sm" className="w-full">
             <Bell className="w-4 h-4 mr-2" />
-            Join Waitlist
+            Pre-Order
           </Button>
         </WaitlistDialog>
       </CardFooter>

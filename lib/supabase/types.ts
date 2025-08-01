@@ -17,6 +17,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          preorder: boolean
           style: string | null
         }
         Insert: {
@@ -26,6 +27,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          preorder?: boolean
           style?: string | null
         }
         Update: {
@@ -35,6 +37,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          preorder?: boolean
           style?: string | null
         }
         Relationships: []

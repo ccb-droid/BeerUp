@@ -5,7 +5,7 @@ import type { Beer, NewBeer } from "../types";
 import { beerSchema, type BeerInput } from "../validations/beer";
 
 /**
- * Server action to get all beers
+ * Server action to get all preorder beers
  */
 export async function getBeers(): Promise<Beer[]> {
   try {
@@ -13,6 +13,7 @@ export async function getBeers(): Promise<Beer[]> {
     const { data, error } = await supabase
       .from("beers")
       .select("*")
+      .eq("preorder", true)
       .order("created_at", { ascending: false });
 
     if (error) {
