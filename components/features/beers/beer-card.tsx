@@ -4,7 +4,6 @@ import Image from "next/image"
 import Link from "next/link"
 import { Beer } from "@/lib/types"
 import { Building2 } from "lucide-react"
-import { BeerReviewInteractive } from "@/components/features/reviews/beer-review-interactive"
 
 interface BeerCardProps {
   beer: Beer
@@ -46,7 +45,9 @@ export function BeerCard({ beer, userRating }: BeerCardProps) {
           </div>
         </CardContent>
       <CardFooter className="p-3 sm:p-4 pt-0 flex justify-between items-center">
-        <BeerReviewInteractive beerId={beer.id} beerName={beer.name} initialUserRating={userRating} />
+          <div className="flex items-center gap-2">
+            Buy now
+          </div>
       </CardFooter>
     </Card>
   )

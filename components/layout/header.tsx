@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Beer, User, LogOut, Clock, Heart } from "lucide-react"
+import { Beer, User, LogOut, Clock, Heart, Grid3X3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth/context"
@@ -123,6 +123,23 @@ export default function Header() {
                 <Link href="/" className="flex items-center space-x-2">
                   <Clock className="h-4 w-4" />
                   <span>Recent Reviews</span>
+                </Link>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className={cn(
+                  "text-sm font-medium relative border-b-2 rounded-b-none transition-colors",
+                  pathname === "/beers" 
+                    ? "border-primary text-primary" 
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Link href="/beers" className="flex items-center space-x-2">
+                  <Grid3X3 className="h-4 w-4" />
+                  <span>All Beers</span>
                 </Link>
               </Button>
             </nav>
