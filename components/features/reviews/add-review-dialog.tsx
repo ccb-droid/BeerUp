@@ -16,6 +16,7 @@ import { StarRating } from "@/components/ui/star-rating"
 import { supabase } from "@/lib/supabase/client"
 import { findOrCreateBeer } from "@/lib/actions/beers"
 import { addReview } from "@/lib/actions/reviews"
+import { resizeImage } from "@/lib/utils/image-resize"
 
 interface BeerOption {
   id: string
@@ -34,6 +35,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
   const [brewery, setBrewery] = useState("")
   const [style, setStyle] = useState("")
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [isProcessingImage, setIsProcessingImage] = useState(false)
   
   // Review fields
   const [rating, setRating] = useState(0)
@@ -51,6 +53,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
     setBrewery("")
     setStyle("")
     setImageFile(null)
+    setIsProcessingImage(false)
     setRating(0)
     setReviewText("")
     setIsLoading(false)
@@ -87,9 +90,42 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0])
+      const file = e.target.files[0]
+      
+      // Check if it's an image file
+      if (!file.type.startsWith('image/')) {
+        showToast("Please select an image file.", "error")
+        return
+      }
+
+      // Check file size (5MB limit before resizing)
+      const maxFileSize = 5 * 1024 * 1024 // 5MB
+      if (file.size > maxFileSize) {
+        showToast("Image file is too large. Please select an image under 5MB.", "error")
+        return
+      }
+
+      setIsProcessingImage(true)
+      
+      try {
+        // Resize image to stay within limits
+        const resizedFile = await resizeImage(file, {
+          maxWidth: 1920,
+          maxHeight: 1080,
+          quality: 0.8,
+          outputFormat: 'jpeg'
+        })
+        
+        setImageFile(resizedFile)
+        showToast("Image processed successfully!", "success")
+      } catch (error) {
+        console.error("Error resizing image:", error)
+        showToast("Failed to process image. Please try a different image.", "error")
+      } finally {
+        setIsProcessingImage(false)
+      }
     }
   }
 
@@ -314,13 +350,24 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
                     type="file" 
                     onChange={handleFileChange} 
                     accept="image/*"
-                    disabled={isLoading}
+                    disabled={isLoading || isProcessingImage}
                     required={!selectedBeer}
                   />
+                  {isProcessingImage && (
+                    <p className="text-sm text-blue-600 mt-1 flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                      Processing image...
+                    </p>
+                  )}
+                  {imageFile && !isProcessingImage && (
+                    <p className="text-sm text-green-600 mt-1">
+                      ✓ Image ready ({(imageFile.size / 1024).toFixed(1)}KB)
+                    </p>
+                  )}
                   <p className="text-sm text-muted-foreground mt-1">
                     {selectedBeer 
-                      ? "Upload an image specific to your review (optional)"
-                      : "Required for new beers - will be used as the main beer image"
+                      ? "Upload an image specific to your review (optional). Images will be automatically resized."
+                      : "Required for new beers - will be used as the main beer image. Images will be automatically resized."
                     }
                   </p>
                 </div>
@@ -359,12 +406,12 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
 
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button type="button" variant="outline" disabled={isLoading}>
+                  <Button type="button" variant="outline" disabled={isLoading || isProcessingImage}>
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Adding Review..." : "Add Review"}
+                <Button type="submit" disabled={isLoading || isProcessingImage}>
+                  {isLoading ? "Adding Review..." : isProcessingImage ? "Processing Image..." : "Add Review"}
                 </Button>
               </DialogFooter>
             </form>
