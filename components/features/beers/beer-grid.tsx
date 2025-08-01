@@ -38,8 +38,7 @@ export function BeerGrid({ beers, userRatingsMap }: BeerGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
       {beers.map((beer) => {
-        const userRating = userRatingsMap?.get(beer.id)
-        return <BeerCard key={beer.id} beer={beer} userRating={userRating} />
+        return <BeerCard key={beer.id} beer={beer} />
       })}
     </div>
   )
