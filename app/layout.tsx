@@ -32,7 +32,7 @@ export default function RootLayout({
                 <div className="min-h-screen bg-background">
                   <Header />
                   <main className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-                    <div className="py-4 sm:py-6 lg:py-8">
+                    <div className="py-4 sm:py-6 lg:py-8 pb-20 sm:pb-4">
                       {children}
                     </div>
                   </main>

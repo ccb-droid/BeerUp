@@ -102,7 +102,7 @@ export function ForgotPasswordForm() {
           </div>
           <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
           <CardDescription className="text-center">
-            Enter your email address and we'll send you a reset link
+            Enter your email address and we&apos;ll send you a reset link
           </CardDescription>
         </CardHeader>
         <CardContent>

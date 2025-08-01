@@ -79,7 +79,7 @@ export function AddBeerDialog({ children }: { children: React.ReactNode }) {
     }
 
     setIsLoading(true)
-    let imageUrls: string[] = []
+    const imageUrls: string[] = []
 
     if (imageFile) {
       const fileName = `${user.id}/${Date.now()}-${imageFile.name}`

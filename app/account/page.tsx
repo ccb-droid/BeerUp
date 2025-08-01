@@ -60,9 +60,17 @@ export default function AccountPage() {
         date_of_birth: dob,
       })
 
+      if (updatedProfile) {
+        return
+      }
+
       setSuccess("Profile updated successfully")
-    } catch (error: any) {
-      setError(error.message || "An error occurred")
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError("An unknown error occurred")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -121,8 +129,12 @@ export default function AccountPage() {
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
-    } catch (error: any) {
-      setError(error.message || "An error occurred while updating password")
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError("An unknown error occurred while updating password")
+      }
     } finally {
       setIsLoading(false)
     }

@@ -199,7 +199,7 @@ export default function SearchBar() {
             </div>
           ) : (
             <div className="p-4 text-center text-muted-foreground">
-              <div className="text-sm sm:text-base">No beers found matching "{searchQuery}"</div>
+              <div className="text-sm sm:text-base">No beers found matching &quot;{searchQuery}&quot;</div>
               <div className="text-xs sm:text-sm mt-2 text-muted-foreground/70">
                 Try searching by beer name, brewery, or style
               </div>

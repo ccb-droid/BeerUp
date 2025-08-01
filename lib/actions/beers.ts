@@ -2,7 +2,7 @@
 
 import { createClient } from "../supabase/server";
 import type { Beer, NewBeer } from "../types";
-import { beerSchema, type BeerInput, type BeerSearch } from "../validations/beer";
+import { beerSchema, type BeerInput } from "../validations/beer";
 
 /**
  * Server action to get all beers

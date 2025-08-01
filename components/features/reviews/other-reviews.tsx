@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -37,11 +37,7 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
   const [hasMore, setHasMore] = useState(true)
   const pageSize = 5
 
-  useEffect(() => {
-    fetchReviews()
-  }, [beerId, userId])
-
-  async function fetchReviews() {
+  const fetchReviews = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -76,7 +72,11 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
     }
 
     setLoading(false);
-  }
+  }, [beerId, userId, page, pageSize])
+
+  useEffect(() => {
+    fetchReviews()
+  }, [fetchReviews])
 
   const loadMore = () => {
     setPage((prev) => prev + 1)
@@ -86,7 +86,7 @@ export default function OtherReviews({ beerId, userId }: { beerId: string; userI
     if (page > 0) {
       fetchReviews()
     }
-  }, [page])
+  }, [fetchReviews, page])
 
   if (loading && reviews.length === 0) {
     return <div>Loading reviews...</div>

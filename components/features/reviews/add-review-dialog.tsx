@@ -33,7 +33,6 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
   const [selectedBeer, setSelectedBeer] = useState<BeerOption | null>(null)
   const [brewery, setBrewery] = useState("")
   const [style, setStyle] = useState("")
-  const [description, setDescription] = useState("")
   const [imageFile, setImageFile] = useState<File | null>(null)
   
   // Review fields
@@ -51,7 +50,6 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
     setSelectedBeer(null)
     setBrewery("")
     setStyle("")
-    setDescription("")
     setImageFile(null)
     setRating(0)
     setReviewText("")
@@ -199,22 +197,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
           formData.append("imageFile", imageFile)
         } else {
           // For new beers, the same image goes to both beer and review
-          // Upload a separate copy for the review
-          const reviewFileName = `reviews/${user.id}/${Date.now()}-review-${imageFile.name}`
-          const { data: reviewUploadData, error: reviewUploadError } = await supabase.storage
-            .from("beer-images")
-            .upload(reviewFileName, imageFile)
-
-          if (!reviewUploadError) {
-            const { data: reviewPublicUrlData } = supabase.storage
-              .from("beer-images")
-              .getPublicUrl(reviewUploadData.path)
-            
-            // Create a new File object for the review image
-            const reviewImageBlob = new Blob([await imageFile.arrayBuffer()], { type: imageFile.type })
-            const reviewImageFile = new File([reviewImageBlob], imageFile.name, { type: imageFile.type })
-            formData.append("imageFile", reviewImageFile)
-          }
+          formData.append("imageFile", imageFile)
         }
       }
 
@@ -238,9 +221,9 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
         console.log("Review created with ID:", result.reviewId)
       }
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating review:", {
-        message: error.message,
+        message: error instanceof Error ? error.message : "Unknown error",
         beerName,
         selectedBeer,
         brewery,
@@ -250,7 +233,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
         reviewTextLength: reviewText.length,
         errorObject: error
       })
-      showToast(error.message || "Failed to add review. Please contact nic/david.", "error")
+      showToast(error instanceof Error ? error.message : "Failed to add review. Please contact nic/david.", "error")
     } finally {
       setIsLoading(false)
     }

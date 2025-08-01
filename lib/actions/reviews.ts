@@ -8,7 +8,7 @@ import { reviewSchema, updateReviewSchema, type ReviewInput, type UpdateReviewIn
 
 export async function addReview(
   formData: FormData
-): Promise<{ success: boolean; error?: string; reviewId?: string }> {
+): Promise<{ success: boolean; error?: string | null; reviewId?: string | null }> {
   try {
     const supabase = await createClient();
     
@@ -33,7 +33,7 @@ export async function addReview(
     console.log("Action `addReview`: Authenticated user", { userId: userId, email: user.email });
 
     // Log formData contents for debugging, excluding sensitive/large values
-    const formDataDebug: { [key: string]: any } = {};
+    const formDataDebug: { [key: string]: unknown } = {};
     formData.forEach((value, key) => {
       if (value instanceof File) {
         formDataDebug[key] = { name: value.name, size: value.size, type: value.type };
@@ -129,7 +129,7 @@ export async function addReview(
     // Consider revalidating user profile pages if they list user\'s reviews
 
     return { success: true, reviewId: newReview.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Action `addReview`: Unexpected error", { error });
     return {
       success: false,
@@ -231,7 +231,7 @@ export async function getOtherReviewsAction(
   userId: string | undefined,
   page: number,
   pageSize: number
-): Promise<{ data: any[] | null; error: string | null }> {
+): Promise<{ data: unknown[] | null; error: string | null }> {
   try {
     const supabase = await createClient();
     const offset = page * pageSize;
@@ -267,7 +267,7 @@ export async function getOtherReviewsAction(
 export async function getRecentReviewsAction(
   page: number,
   pageSize: number
-): Promise<{ data: any[] | null; error: string | null }> {
+): Promise<{ data: unknown[] | null; error: string | null }> {
   try {
     const supabase = await createClient();
     const offset = page * pageSize;

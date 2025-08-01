@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Check } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { supabase } from "@/lib/supabase/client"
-import type { Beer } from "@/lib/types"
 
 interface BeerOption {
   id: string
@@ -193,7 +191,7 @@ export function BeerNameCombobox({
                     }}
                   >
                     <div className="flex flex-col">
-                      <span className="font-medium">Create "{value}"</span>
+                      <span className="font-medium">Create &quot;{value}&quot;</span>
                       <span className="text-xs text-muted-foreground">
                         Add as a new beer
                       </span>
@@ -205,7 +203,7 @@ export function BeerNameCombobox({
               {beerOptions.length === 0 && value.trim().length >= 2 && (
                 <div className="py-4 text-center">
                   <p className="text-sm text-muted-foreground mb-2">
-                    No existing beers found for "{value}"
+                    No existing beers found for &quot;{value}&quot;
                   </p>
                   <p className="text-xs text-muted-foreground">
                     You can continue typing to add a new beer

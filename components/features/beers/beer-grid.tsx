@@ -3,10 +3,9 @@ import { type Beer } from "@/lib/types"
 
 interface BeerGridProps {
   beers: Beer[]
-  userRatingsMap?: Map<string, number>
 }
 
-export function BeerGrid({ beers, userRatingsMap }: BeerGridProps) {
+export function BeerGrid({ beers }: BeerGridProps) {
   if (!beers || beers.length === 0) {
     return (
       <div className="text-center py-12 sm:py-16">

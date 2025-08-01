@@ -22,14 +22,17 @@ export function useSignIn() {
       
       return response.json()
     },
-    onSuccess: async () => {
+    onSuccess: async (data, variables) => {
       toast({
         title: "Success",
         description: "Signed in successfully!",
       })
       // Refresh auth session to sync client state with server session
       await refreshSession()
-      router.push("/")
+      
+      // Get redirect URL from form data or use default
+      const redirectTo = variables.get("redirectTo") as string || "/"
+      router.push(redirectTo)
     },
     onError: (error) => {
       toast({

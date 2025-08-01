@@ -97,7 +97,7 @@ export function WaitlistDialog({ beer, children }: WaitlistDialogProps) {
             )}
             {user && (
               <p className="text-xs text-muted-foreground">
-                We'll notify you at this email when the beer is available
+                We&apos;ll notify you at this email when the beer is available
               </p>
             )}
           </div>

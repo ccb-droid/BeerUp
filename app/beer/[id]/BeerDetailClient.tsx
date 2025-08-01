@@ -3,13 +3,11 @@
 import { Suspense } from "react"
 import { Edit, Trash2, Star, Calendar, Beer } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
 import Link from "next/link"
 import { AddReviewDialog } from "@/components/features/reviews/add-review-dialog"
 import { Badge } from "@/components/ui/badge"
 import OtherReviews from "@/components/features/reviews/other-reviews"
 import { Card, CardContent } from "@/components/ui/card"
-import NavigationBreadcrumb from "@/components/layout/navigation-breadcrumb"
 
 export interface BeerData {
   id: string
@@ -128,7 +126,7 @@ export default function BeerDetailClient({
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg">Review</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  "{userReview.review_text}"
+                  &quot;{userReview.review_text}&quot;
                 </p>
               </div>
 
@@ -190,7 +188,7 @@ export default function BeerDetailClient({
                 <div className="space-y-2">
                   <h3 className="text-2xl font-bold">Share Your Experience</h3>
                   <p className="text-muted-foreground text-lg max-w-md mx-auto">
-                    You haven't reviewed this beer yet. Be the first to share your thoughts!
+                    You haven&apos;t reviewed this beer yet. Be the first to share your thoughts!
                   </p>
                 </div>
                 <AddReviewDialog>

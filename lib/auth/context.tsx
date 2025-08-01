@@ -20,10 +20,10 @@ type AuthContextType = {
   user: User | null
   session: Session | null
   isLoading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, username: string, dob: string) => Promise<{ error: any; user: any }>
-  signOut: () => Promise<{ success: boolean; error?: any }>
-  resetPassword: (email: string) => Promise<{ error: any }>
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, username: string, dob: string) => Promise<{ error: Error | null; user: User | null }>
+  signOut: () => Promise<{ success: boolean; error?: Error | null }>
+  resetPassword: (email: string) => Promise<{ error: Error | null }>
   refreshSession: () => Promise<void>
 }
 
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(initialSession)
       setUser(initialSession?.user ?? null)
       setIsLoading(false)
-    }).catch((error: any) => {
+    }).catch((error: Error) => {
       console.error("Error getting initial session:", error)
       setIsLoading(false)
     })
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error }
     } catch (error) {
       console.error("Error in signIn:", error)
-      return { error }
+      return { error: error instanceof Error ? error : new Error(String(error)) }
     }
   }
 
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: null, user: data.user }
     } catch (error) {
       console.error("Unexpected error in signUp:", error)
-      return { error, user: null }
+      return { error: error instanceof Error ? error : new Error(String(error)), user: null }
     }
   }
 
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true }
     } catch (error) {
       console.error("Error in signOut:", error)
-      return { success: false, error }
+      return { success: false, error: error instanceof Error ? error : new Error(String(error)) }
     }
   }
 
@@ -136,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error }
     } catch (error) {
       console.error("Error in resetPassword:", error)
-      return { error }
+      return { error: error instanceof Error ? error : new Error(String(error)) }
     }
   }
 

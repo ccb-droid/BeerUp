@@ -2,7 +2,6 @@
 
 import { Suspense } from "react"
 import RecentReviews from "@/components/features/reviews/recent-reviews"
-import NavigationBreadcrumb from "@/components/layout/navigation-breadcrumb"
 import { AddReviewDialog } from "@/components/features/reviews/add-review-dialog"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"

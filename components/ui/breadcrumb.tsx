@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronRight, Home } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { Slot } from "@radix-ui/react-slot"
 import Link from "next/link"
 

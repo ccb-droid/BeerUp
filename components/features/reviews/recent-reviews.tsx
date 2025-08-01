@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -42,11 +42,7 @@ export default function RecentReviews() {
   const [hasMore, setHasMore] = useState(true)
   const pageSize = 5
 
-  useEffect(() => {
-    fetchReviews()
-  }, [])
-
-  async function fetchReviews() {
+  const fetchReviews = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -80,7 +76,11 @@ export default function RecentReviews() {
     }
 
     setLoading(false);
-  }
+  }, [page, pageSize])
+
+  useEffect(() => {
+    fetchReviews()
+  }, [fetchReviews])
 
   const loadMore = () => {
     setPage((prev) => prev + 1)
@@ -90,7 +90,7 @@ export default function RecentReviews() {
     if (page > 0) {
       fetchReviews()
     }
-  }, [page])
+  }, [fetchReviews, page])
 
   if (loading && reviews.length === 0) {
     return (

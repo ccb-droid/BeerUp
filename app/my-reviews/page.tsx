@@ -1,11 +1,9 @@
 "use client"
 
-import { Suspense } from "react"
 import { useAuth } from "@/lib/auth/context"
 import { getUserFullReviewsAction } from "@/lib/actions/reviews"
 import { useQuery } from "@tanstack/react-query"
 import { MyReviewsList } from "@/components/features/reviews/my-reviews-list"
-import NavigationBreadcrumb from "@/components/layout/navigation-breadcrumb"
 
 export default function MyReviewsPage() {
   const { user } = useAuth()

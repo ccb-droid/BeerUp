@@ -22,6 +22,8 @@ export function LoginForm() {
     setIsLoading(true)
     
     const formData = new FormData(e.currentTarget)
+    // Add redirectTo to form data so it gets passed to the mutation
+    formData.append("redirectTo", redirectTo)
     await signInMutation.mutateAsync(formData)
     
     setIsLoading(false)
@@ -84,7 +86,7 @@ export function LoginForm() {
         </CardContent>
         <CardFooter className="flex justify-center">
           <div className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-primary hover:underline">
               Sign up
             </Link>

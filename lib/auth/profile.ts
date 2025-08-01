@@ -5,7 +5,7 @@ import type { Profile, UpdateProfile } from "@/lib/types"; // Import from new sh
 
 export const checkUsernameExists = async (username: string): Promise<{
   exists: boolean;
-  error: any;
+  error: Error | null;
 }> => {
   try {
     const { data, error } = await supabase
@@ -21,7 +21,7 @@ export const checkUsernameExists = async (username: string): Promise<{
     return { exists: data && data.length > 0, error: null };
   } catch (error) {
     console.error("Unexpected error in checkUsernameExists:", error);
-    return { exists: false, error };
+    return { exists: false, error: error instanceof Error ? error : new Error(String(error)) };
   }
 };
 
@@ -29,7 +29,7 @@ export const createUserProfile = async (
   user: User,
   username: string,
   dob: string
-): Promise<{ error: any }> => {
+): Promise<{ error: Error | null }> => {
   try {
     const { error } = await supabase.from("profiles").insert({
       id: user.id,
@@ -42,12 +42,12 @@ export const createUserProfile = async (
 
     if (error) {
       console.error("Profile creation error:", error);
-      return { error };
+      return { error: error instanceof Error ? error : new Error(String(error)) };
     }
     return { error: null };
   } catch (error) {
     console.error("Unexpected error in createUserProfile:", error);
-    return { error };
+    return { error: error instanceof Error ? error : new Error(String(error)) };
   }
 };
 

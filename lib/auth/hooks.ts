@@ -40,9 +40,13 @@ export const handleLoginSubmit = async (
 
     router.push(redirectTo);
     router.refresh();
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
     console.error("Login error:", error);
-    setError(error.message || "Invalid email or password");
+      setError(error.message);
+    } else {
+      setError("An unknown error occurred");
+    }
   } finally {
     setIsLoading(false);
   }
@@ -86,9 +90,13 @@ export const handleRegisterSubmit = async (
       router.push("/");
       router.refresh();
     }
-  } catch (error: any) {
-    console.error("Registration error:", error);
-    setError(error.message || "Error creating account");
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Registration error:", error);
+      setError(error.message || "Error creating account");
+    } else {
+      setError("An unknown error occurred");
+    }
   } finally {
     setIsLoading(false);
   }
