@@ -136,7 +136,7 @@ export function BeerNameCombobox({
         onBlur={(e) => {
           // Delay closing to allow for item selection
           setTimeout(() => {
-            if (!e.currentTarget.contains(document.activeElement)) {
+            if (e.currentTarget && !e.currentTarget.contains(document.activeElement)) {
               setOpen(false)
             }
           }, 200)
