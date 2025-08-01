@@ -84,8 +84,8 @@ export default function BeerDetailClient({
       </div>
 
       {hasUserReview && userReview ? (
-        <div className="space-y-6">
-          {/* Main Review Card */}
+        <>
+          {/* User's Review Card */}
           <Card>
             <CardContent className="p-6 space-y-6">
               {/* Rating Section */}
@@ -143,47 +143,66 @@ export default function BeerDetailClient({
               </div>
             </CardContent>
           </Card>
-        </div>
-      ) : (
-        /* No Review State */
-        <Card>
-          <CardContent className="text-center py-16">
-            <div className="space-y-6">
-              <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
-                <Beer className="h-12 w-12 text-muted-foreground" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold">Share Your Experience</h3>
-                <p className="text-muted-foreground text-lg max-w-md mx-auto">
-                  You haven't reviewed this beer yet. Be the first to share your thoughts!
-                </p>
-              </div>
-              <AddReviewDialog>
-                <Button size="lg">
-                  Add Your Review
-                </Button>
-              </AddReviewDialog>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {/* Other Reviews Section */}
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="text-2xl font-bold mb-6">Community Reviews</h2>
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center space-y-2">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground">Loading community reviews...</p>
+          {/* Community Reviews Section */}
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-bold mb-6">Community Reviews</h2>
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center space-y-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="text-muted-foreground">Loading community reviews...</p>
+                  </div>
+                </div>
+              }>
+                <OtherReviews beerId={paramsId} userId={userId} />
+              </Suspense>
+            </CardContent>
+          </Card>
+        </>
+      ) : (
+        <>
+          {/* Community Reviews Section */}
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-bold mb-6">Community Reviews</h2>
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center space-y-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p className="text-muted-foreground">Loading community reviews...</p>
+                  </div>
+                </div>
+              }>
+                <OtherReviews beerId={paramsId} userId={userId} />
+              </Suspense>
+            </CardContent>
+          </Card>
+
+          {/* No Review State */}
+          <Card>
+            <CardContent className="text-center py-16">
+              <div className="space-y-6">
+                <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
+                  <Beer className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-bold">Share Your Experience</h3>
+                  <p className="text-muted-foreground text-lg max-w-md mx-auto">
+                    You haven't reviewed this beer yet. Be the first to share your thoughts!
+                  </p>
+                </div>
+                <AddReviewDialog>
+                  <Button size="lg">
+                    Add Your Review
+                  </Button>
+                </AddReviewDialog>
               </div>
-            </div>
-          }>
-            <OtherReviews beerId={paramsId} userId={userId} />
-          </Suspense>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   )
 } 
