@@ -1,24 +1,11 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { supabase } from "@/lib/supabase/client"
 import type { Beer } from "@/lib/types"
-import { Button } from "@/components/ui/button"
 
 interface BeerOption {
   id: string
@@ -120,132 +107,121 @@ export function BeerNameCombobox({
     setOpen(false)
   }
 
-  const handleOpenChange = (isOpen: boolean) => {
-    setOpen(isOpen)
-    if (!isOpen) {
-      setSearchQuery(value) // Reset search query to current value when closing
-    }
-  }
-
-  const handleInputClick = () => {
-    setOpen(true)
-  }
 
   return (
     <div className="relative">
-      <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between font-normal h-10 px-3"
-            onClick={handleInputClick}
-          >
-            <span className={cn("truncate", !value && "text-muted-foreground")}>
-              {value || placeholder}
-            </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
-          <Command shouldFilter={false}>
-            <div className="border-b">
-              <Input
-                value={searchQuery}
-                onChange={(e) => {
-                  const newValue = e.target.value
-                  setSearchQuery(newValue)
-                  onValueChange(newValue)
-                  
-                  // If user is typing something different, clear the selected beer
-                  if (selectedBeer && newValue !== selectedBeer.name) {
-                    setSelectedBeer(null)
-                    onBeerSelect(null)
-                  }
-                }}
-                placeholder={placeholder}
-                disabled={disabled}
-                className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                autoFocus
-              />
+      <Input
+        value={value}
+        onChange={(e) => {
+          const newValue = e.target.value
+          onValueChange(newValue)
+          setSearchQuery(newValue)
+          
+          // If user is typing something different, clear the selected beer
+          if (selectedBeer && newValue !== selectedBeer.name) {
+            setSelectedBeer(null)
+            onBeerSelect(null)
+          }
+          
+          // Show dropdown when typing
+          if (newValue.trim().length >= 2) {
+            setOpen(true)
+          } else {
+            setOpen(false)
+          }
+        }}
+        onFocus={() => {
+          if (value.trim().length >= 2) {
+            setOpen(true)
+          }
+        }}
+        onBlur={(e) => {
+          // Delay closing to allow for item selection
+          setTimeout(() => {
+            if (!e.currentTarget.contains(document.activeElement)) {
+              setOpen(false)
+            }
+          }, 200)
+        }}
+        placeholder={placeholder}
+        disabled={disabled}
+        className="w-full"
+      />
+      
+      {open && (value.trim().length >= 2) && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+          {isSearching ? (
+            <div className="py-6 text-center text-sm">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mx-auto mb-2"></div>
+              Searching beers...
             </div>
-            <CommandList>
-              {isSearching ? (
-                <div className="py-6 text-center text-sm">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mx-auto mb-2"></div>
-                  Searching beers...
-                </div>
-              ) : (
-                <>
-                  {beerOptions.length > 0 ? (
-                    <CommandGroup heading="Existing Beers">
-                      {beerOptions.map((beer) => (
-                        <CommandItem
-                          key={beer.id}
-                          value={`${beer.name}-${beer.brewery}`}
-                          onSelect={() => handleSelect(beer)}
-                          className="flex items-center justify-between"
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-medium">{beer.name}</span>
-                            <span className="text-sm text-muted-foreground">
-                              {beer.brewery}
-                              {beer.style && ` • ${beer.style}`}
-                            </span>
-                          </div>
-                          <Check
-                            className={cn(
-                              "ml-2 h-4 w-4",
-                              selectedBeer?.id === beer.id ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  ) : searchQuery.trim().length >= 2 ? (
-                    <CommandEmpty>
-                      <div className="py-4 text-center">
-                        <p className="text-sm text-muted-foreground mb-2">
-                          No existing beers found for "{searchQuery}"
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          You can continue typing to add a new beer
-                        </p>
+          ) : (
+            <>
+              {beerOptions.length > 0 && (
+                <div className="p-2">
+                  <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">Existing Beers</p>
+                  {beerOptions.map((beer) => (
+                    <div
+                      key={beer.id}
+                      className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => handleSelect(beer)}
+                    >
+                      <div className="flex flex-col flex-1">
+                        <span className="font-medium">{beer.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {beer.brewery}
+                          {beer.style && ` • ${beer.style}`}
+                        </span>
                       </div>
-                    </CommandEmpty>
-                  ) : (
-                    <div className="py-4 text-center text-sm text-muted-foreground">
-                      Type at least 2 characters to search for beers
+                      {selectedBeer?.id === beer.id && (
+                        <Check className="ml-2 h-4 w-4" />
+                      )}
                     </div>
-                  )}
-                  
-                  {searchQuery.trim().length >= 2 && (
-                    <CommandGroup heading="Add New Beer">
-                      <CommandItem
-                        value={`new-beer-${searchQuery}`}
-                        onSelect={() => {
-                          onValueChange(searchQuery)
-                          onBeerSelect(null) // null indicates new beer
-                          setOpen(false)
-                        }}
-                        className="flex items-center"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-medium">Create "{searchQuery}"</span>
-                          <span className="text-sm text-muted-foreground">
-                            Add as a new beer
-                          </span>
-                        </div>
-                      </CommandItem>
-                    </CommandGroup>
-                  )}
-                </>
+                  ))}
+                </div>
               )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+              
+              {value.trim().length >= 2 && (
+                <div className="p-2 border-t">
+                  <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">Add New Beer</p>
+                  <div
+                    className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => {
+                      onValueChange(value)
+                      onBeerSelect(null) // null indicates new beer
+                      setOpen(false)
+                    }}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">Create "{value}"</span>
+                      <span className="text-xs text-muted-foreground">
+                        Add as a new beer
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {beerOptions.length === 0 && value.trim().length >= 2 && (
+                <div className="py-4 text-center">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    No existing beers found for "{value}"
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    You can continue typing to add a new beer
+                  </p>
+                </div>
+              )}
+              
+              {value.trim().length < 2 && (
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  Type at least 2 characters to search for beers
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 } 
