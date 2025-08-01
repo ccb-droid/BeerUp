@@ -16,6 +16,10 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type NewProfile = Database["public"]["Tables"]["profiles"]["Insert"];
 export type UpdateProfile = Database["public"]["Tables"]["profiles"]["Update"];
 
+export type Waitlist = Database["public"]["Tables"]["waitlist"]["Row"];
+export type NewWaitlist = Database["public"]["Tables"]["waitlist"]["Insert"];
+export type UpdateWaitlist = Database["public"]["Tables"]["waitlist"]["Update"];
+
 // Extended types with relations based on actual database relationships
 export type ReviewWithProfile = Review & {
   profiles: Pick<Profile, 'username' | 'id'> | null;

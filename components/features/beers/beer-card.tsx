@@ -1,21 +1,20 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import Link from "next/link"
 import { Beer } from "@/lib/types"
-import { Building2 } from "lucide-react"
+import { Building2, Bell } from "lucide-react"
+import { WaitlistDialog } from "./waitlist-dialog"
 
 interface BeerCardProps {
   beer: Beer
-  userRating?: number
 }
 
-export function BeerCard({ beer, userRating }: BeerCardProps) {
-  // Use the beer image if available, otherwise use placeholder
+export function BeerCard({ beer }: BeerCardProps) {
   const imageUrl = beer.image_url || "/placeholder.svg?height=200&width=200"
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group animate-fade-in">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group animate-fade-in flex flex-col h-full">
         <div className="relative h-44 sm:h-48 w-full bg-muted">
           <Image
             src={imageUrl}
@@ -26,7 +25,7 @@ export function BeerCard({ beer, userRating }: BeerCardProps) {
           />
         </div>
         
-        <CardContent className="p-3 sm:p-4">
+        <CardContent className="p-3 sm:p-4 flex-1">
           <div className="space-y-2 sm:space-y-3">
             <h3 className="font-semibold text-base sm:text-lg line-clamp-2 group-hover:text-primary transition-colors">
               {beer.name}
@@ -44,11 +43,15 @@ export function BeerCard({ beer, userRating }: BeerCardProps) {
             )}
           </div>
         </CardContent>
-      <CardFooter className="p-3 sm:p-4 pt-0 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            Buy now
-          </div>
+        
+      <CardFooter className="p-3 sm:p-4 pt-0 mt-auto">
+        <WaitlistDialog beer={beer}>
+          <Button variant="outline" size="sm" className="w-full">
+            <Bell className="w-4 h-4 mr-2" />
+            Join Waitlist
+          </Button>
+        </WaitlistDialog>
       </CardFooter>
     </Card>
   )
-} 
+}
