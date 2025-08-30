@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { BeerNameCombobox } from "./beer-name-combobox"
 import { StarRating } from "@/components/ui/star-rating"
@@ -40,6 +41,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
   // Review fields
   const [rating, setRating] = useState(0)
   const [reviewText, setReviewText] = useState("")
+  const [typicallyDrinks, setTypicallyDrinks] = useState(false)
   
   const [isLoading, setIsLoading] = useState(false)
 
@@ -56,6 +58,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
     setIsProcessingImage(false)
     setRating(0)
     setReviewText("")
+    setTypicallyDrinks(false)
     setIsLoading(false)
   }
 
@@ -225,6 +228,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
       formData.append("beerId", beerId)
       formData.append("rating", rating.toString())
       formData.append("reviewText", reviewText.trim())
+      formData.append("typicallyDrinks", typicallyDrinks.toString())
 
       // Handle review image upload
       if (imageFile) {
@@ -401,6 +405,18 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
                     disabled={isLoading}
                     rows={4}
                   />
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="typicallyDrinks"
+                    checked={typicallyDrinks}
+                    onCheckedChange={(checked) => setTypicallyDrinks(checked === true)}
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="typicallyDrinks" className="text-sm font-normal cursor-pointer">
+                    I typically drink this style
+                  </Label>
                 </div>
               </div>
 

@@ -46,6 +46,7 @@ export async function addReview(
     const beerId = formData.get("beerId") as string;
     const ratingString = formData.get("rating") as string;
     const reviewText = formData.get("reviewText") as string | null;
+    const typicallyDrinksString = formData.get("typicallyDrinks") as string | null;
     const imageFile = formData.get("imageFile") as File | null;
 
     if (!beerId || !ratingString) {
@@ -86,8 +87,7 @@ export async function addReview(
       rating: rating,
       review_text: reviewText || null,
       image_url: imageUrl,
-      // typically_drinks can be omitted to use database default or set explicitly
-      // typically_drinks: false,
+      typically_drinks: typicallyDrinksString === "true",
     };
 
     console.log("Action `addReview`: Creating review with data", {
