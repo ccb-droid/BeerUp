@@ -16,8 +16,10 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          moq: number | null
           name: string
           preorder: boolean
+          price: number | null
           style: string | null
         }
         Insert: {
@@ -26,8 +28,10 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          moq?: number | null
           name: string
           preorder?: boolean
+          price?: number | null
           style?: string | null
         }
         Update: {
@@ -36,8 +40,10 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          moq?: number | null
           name?: string
           preorder?: boolean
+          price?: number | null
           style?: string | null
         }
         Relationships: []
@@ -130,6 +136,7 @@ export type Database = {
           quantity: number
           created_at: string
           notified_at: string | null
+          payment_confirmed: boolean
         }
         Insert: {
           id?: string
@@ -140,6 +147,7 @@ export type Database = {
           quantity?: number
           created_at?: string
           notified_at?: string | null
+          payment_confirmed?: boolean
         }
         Update: {
           id?: string
@@ -150,6 +158,7 @@ export type Database = {
           quantity?: number
           created_at?: string
           notified_at?: string | null
+          payment_confirmed?: boolean
         }
         Relationships: [
           {

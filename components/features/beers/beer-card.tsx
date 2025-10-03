@@ -3,8 +3,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Beer } from "@/lib/types"
-import { Building2, Bell } from "lucide-react"
-import { WaitlistDialog } from "./waitlist-dialog"
+import { Building2, ShoppingCart } from "lucide-react"
+import { OrderNowDialog } from "./order-now-dialog"
 
 interface BeerCardProps {
   beer: Beer
@@ -45,12 +45,12 @@ export function BeerCard({ beer }: BeerCardProps) {
         </CardContent>
         
       <CardFooter className="p-3 sm:p-4 pt-0 mt-auto">
-        <WaitlistDialog beer={beer}>
+        <OrderNowDialog beer={beer}>
           <Button variant="outline" size="sm" className="w-full">
-            <Bell className="w-4 h-4 mr-2" />
-            Pre-Order
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Order Now
           </Button>
-        </WaitlistDialog>
+        </OrderNowDialog>
       </CardFooter>
     </Card>
   )

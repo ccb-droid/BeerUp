@@ -15,10 +15,10 @@ export default async function BeersPage() {
         <div className="flex justify-between items-start w-full">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              Preorder Beers
+              Order Beers
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              Discover and preorder upcoming beers in our collection
+              Discover and order beers from our collection
             </p>
           </div>
           <AddReviewDialog>
