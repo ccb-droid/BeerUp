@@ -128,6 +128,7 @@ export async function createBeer(beerData: NewBeer): Promise<Beer | null> {
         name: beerData.name.trim(),
         brewery: beerData.brewery.trim(),
         style: beerData.style?.trim() || "",
+        preorder: beerData.preorder ?? false,
       })
       .select()
       .single();
@@ -192,6 +193,7 @@ export async function findOrCreateBeer(
       .insert({
         ...beerDetails,
         image_url: imageUrl || null,
+        preorder: false,
       })
       .select()
       .single();

@@ -28,7 +28,7 @@ export function BeerManagementTable({ beers }: BeerManagementTableProps) {
     const updateData = {
       price: field === 'price' ? value as number | null : beer.price,
       moq: field === 'moq' ? value as number : beer.moq || 1,
-      preorder: field === 'preorder' ? value as boolean : beer.preorder || false,
+      preorder: field === 'preorder' ? value as boolean : beer.preorder,
     }
 
     setSavingStates(prev => ({ ...prev, [`${beerId}-${field}`]: true }))
@@ -139,7 +139,7 @@ export function BeerManagementTable({ beers }: BeerManagementTableProps) {
                   </TableCell>
                   <TableCell>
                     <Switch
-                      checked={preorderStates[beer.id] ?? beer.preorder ?? false}
+                      checked={preorderStates[beer.id] ?? beer.preorder}
                       onCheckedChange={(checked) => handlePreorderToggle(beer.id, checked)}
                     />
                   </TableCell>
