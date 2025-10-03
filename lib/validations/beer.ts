@@ -25,6 +25,13 @@ export const beerFilterSchema = z.object({
   max_ibu: z.number().min(0).max(120).optional(),
 })
 
+export const beerPricingSchema = z.object({
+  price: z.number().min(0, "Price must be positive").max(9999.99, "Price too high").nullable(),
+  moq: z.number().int().min(1, "MOQ must be at least 1").max(1000, "MOQ too high"),
+  preorder: z.boolean().default(false),
+})
+
 export type BeerInput = z.infer<typeof beerSchema>
 export type BeerSearch = z.infer<typeof beerSearchSchema>
-export type BeerFilter = z.infer<typeof beerFilterSchema> 
+export type BeerFilter = z.infer<typeof beerFilterSchema>
+export type BeerPricingInput = z.infer<typeof beerPricingSchema> 

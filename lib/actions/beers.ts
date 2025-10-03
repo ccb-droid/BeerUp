@@ -2,7 +2,7 @@
 
 import { createClient } from "../supabase/server";
 import type { Beer, NewBeer } from "../types";
-import { beerSchema, type BeerInput } from "../validations/beer";
+import { beerSchema, type BeerInput, beerPricingSchema, type BeerPricingInput } from "../validations/beer";
 
 /**
  * Server action to get all preorder beers
@@ -24,6 +24,29 @@ export async function getBeers(): Promise<Beer[]> {
     return data || [];
   } catch (error) {
     console.error("Server Action - getBeers unexpected error:", error);
+    return [];
+  }
+}
+
+/**
+ * Server action to get all beers for admin (no preorder filter)
+ */
+export async function getAllBeers(): Promise<Beer[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("beers")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Server Action - getAllBeers:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Server Action - getAllBeers unexpected error:", error);
     return [];
   }
 }
@@ -244,5 +267,43 @@ export async function deleteBeer(id: string): Promise<void> {
 
   if (error) {
     throw new Error(error.message);
+  }
+}
+
+/**
+ * Server action to update beer pricing (price, MOQ, and preorder status)
+ */
+export async function updateBeerPricing(id: string, pricingData: BeerPricingInput): Promise<Beer | null> {
+  try {
+    const validated = beerPricingSchema.parse(pricingData);
+
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("beers")
+      .update({
+        price: validated.price,
+        moq: validated.moq,
+        preorder: validated.preorder
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Server Action - updateBeerPricing:", error);
+      return null;
+    }
+
+    console.log("Server Action - updateBeerPricing: Successfully updated", {
+      beerId: id,
+      price: validated.price,
+      moq: validated.moq,
+      preorder: validated.preorder
+    });
+
+    return data;
+  } catch (error) {
+    console.error("Server Action - updateBeerPricing unexpected error:", error);
+    return null;
   }
 } 
