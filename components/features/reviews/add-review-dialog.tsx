@@ -93,42 +93,54 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const processImageFile = async (file: File) => {
+    // Check if it's an image file (including HEIC/HEIF for iPhone)
+    const isImage = file.type.startsWith('image/') ||
+                    file.name.toLowerCase().endsWith('.heic') ||
+                    file.name.toLowerCase().endsWith('.heif')
+
+    if (!isImage) {
+      showToast("Please select an image file.", "error")
+      return
+    }
+
+    // Check file size (10MB limit before resizing to accommodate HEIC files)
+    const maxFileSize = 10 * 1024 * 1024 // 10MB
+    if (file.size > maxFileSize) {
+      showToast("Image file is too large. Please select an image under 10MB.", "error")
+      return
+    }
+
+    setIsProcessingImage(true)
+
+    try {
+      // Resize image to stay within limits (this will convert HEIC to JPEG)
+      const resizedFile = await resizeImage(file, {
+        maxWidth: 1920,
+        maxHeight: 1080,
+        quality: 0.8,
+        outputFormat: 'jpeg'
+      })
+
+      setImageFile(resizedFile)
+      showToast("Image processed successfully!", "success")
+    } catch (error) {
+      console.error("Error resizing image:", error)
+      showToast("Failed to process image. Please try a different image.", "error")
+    } finally {
+      setIsProcessingImage(false)
+    }
+  }
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      
-      // Check if it's an image file
-      if (!file.type.startsWith('image/')) {
-        showToast("Please select an image file.", "error")
-        return
-      }
+      await processImageFile(e.target.files[0])
+    }
+  }
 
-      // Check file size (5MB limit before resizing)
-      const maxFileSize = 5 * 1024 * 1024 // 5MB
-      if (file.size > maxFileSize) {
-        showToast("Image file is too large. Please select an image under 5MB.", "error")
-        return
-      }
-
-      setIsProcessingImage(true)
-      
-      try {
-        // Resize image to stay within limits
-        const resizedFile = await resizeImage(file, {
-          maxWidth: 1920,
-          maxHeight: 1080,
-          quality: 0.8,
-          outputFormat: 'jpeg'
-        })
-        
-        setImageFile(resizedFile)
-        showToast("Image processed successfully!", "success")
-      } catch (error) {
-        console.error("Error resizing image:", error)
-        showToast("Failed to process image. Please try a different image.", "error")
-      } finally {
-        setIsProcessingImage(false)
-      }
+  const handleCameraCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      await processImageFile(e.target.files[0])
     }
   }
 
@@ -346,17 +358,81 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
                 </div>
                 <div>
                   <Label htmlFor="image">
-                    {selectedBeer ? "Review Image (Optional)" : "Beer Image"} 
+                    {selectedBeer ? "Review Image (Optional)" : "Beer Image"}
                     {!selectedBeer && <span className="text-red-500"> *</span>}
                   </Label>
-                  <Input 
-                    id="image" 
-                    type="file" 
-                    onChange={handleFileChange} 
-                    accept="image/*"
-                    disabled={isLoading || isProcessingImage}
-                    required={!selectedBeer}
-                  />
+                  <div className="flex gap-2 mt-2">
+                    <div className="flex-1">
+                      <Input
+                        id="camera-input"
+                        type="file"
+                        onChange={handleCameraCapture}
+                        accept="image/*,.heic,.heif"
+                        capture="environment"
+                        disabled={isLoading || isProcessingImage}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        disabled={isLoading || isProcessingImage}
+                        onClick={() => document.getElementById('camera-input')?.click()}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="mr-2"
+                        >
+                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                          <circle cx="12" cy="13" r="3" />
+                        </svg>
+                        Take Photo
+                      </Button>
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        id="gallery-input"
+                        type="file"
+                        onChange={handleFileChange}
+                        accept="image/*,.heic,.heif"
+                        disabled={isLoading || isProcessingImage}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        disabled={isLoading || isProcessingImage}
+                        onClick={() => document.getElementById('gallery-input')?.click()}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="mr-2"
+                        >
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                          <circle cx="8.5" cy="8.5" r="1.5" />
+                          <polyline points="21 15 16 10 5 21" />
+                        </svg>
+                        Choose from Gallery
+                      </Button>
+                    </div>
+                  </div>
                   {isProcessingImage && (
                     <p className="text-sm text-blue-600 mt-1 flex items-center gap-2">
                       <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
@@ -369,7 +445,7 @@ export function AddReviewDialog({ children }: { children: React.ReactNode }) {
                     </p>
                   )}
                   <p className="text-sm text-muted-foreground mt-1">
-                    {selectedBeer 
+                    {selectedBeer
                       ? "Upload an image specific to your review (optional). Images will be automatically resized."
                       : "Required for new beers - will be used as the main beer image. Images will be automatically resized."
                     }
