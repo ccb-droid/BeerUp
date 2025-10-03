@@ -1,7 +1,15 @@
 import { getAllBeers } from "@/lib/actions/beers"
 import { BeerManagementTable } from "@/components/features/admin/beer-management-table"
+import { isAdmin } from "@/lib/auth/admin"
+import { redirect } from "next/navigation"
 
 export default async function AdminPage() {
+  const adminAccess = await isAdmin()
+
+  if (!adminAccess) {
+    redirect("/")
+  }
+
   const beers = await getAllBeers()
 
   return (

@@ -107,7 +107,9 @@ export function BeerManagementTable({ beers }: BeerManagementTableProps) {
                           const value = e.target.value ? parseFloat(e.target.value) : null
                           if (value !== null && !isNaN(value)) {
                             e.target.value = value.toFixed(2)
-                            debouncedUpdate(beer.id, 'price', value)
+                            handleUpdate(beer.id, 'price', value)
+                          } else if (e.target.value === "") {
+                            handleUpdate(beer.id, 'price', null)
                           }
                         }}
                         className="w-full"
@@ -124,9 +126,9 @@ export function BeerManagementTable({ beers }: BeerManagementTableProps) {
                         type="number"
                         min="1"
                         defaultValue={beer.moq?.toString() || "1"}
-                        onChange={(e) => {
+                        onBlur={(e) => {
                           const value = parseInt(e.target.value) || 1
-                          debouncedUpdate(beer.id, 'moq', value)
+                          handleUpdate(beer.id, 'moq', value)
                         }}
                         className="w-full"
                       />
